@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react"
@@ -271,7 +272,7 @@ export function Sidebar({
             <div className="flex items-center gap-2 px-2 py-1.5 bg-[#1e1e1e] rounded-sm border border-[#3c3c3c]">
               <Brain className="w-3.5 h-3.5 text-[#007acc]" />
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-[#ffffff] leading-none uppercase">Octamind AI</span>
+                <span className="text-[9px] font-bold text-[#ffffff] leading-none uppercase">CaramelPepper</span>
                 <span className="text-[8px] text-[#858585] font-mono">Engine Active</span>
               </div>
             </div>

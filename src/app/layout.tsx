@@ -1,9 +1,10 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { AppProvider } from '@/store/use-app-store';
 
 export const metadata: Metadata = {
-  title: 'Octamind AI | Local AI Refactoring',
+  title: 'CaramelPepper | Local AI Refactoring',
   description: 'Privacy-preserving code complexity analysis and AI refactoring tool.',
 };
 

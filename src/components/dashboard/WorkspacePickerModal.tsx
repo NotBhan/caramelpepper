@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react"
@@ -86,7 +87,7 @@ export function WorkspacePickerModal({ isOpen, onSelect, onSkip }: WorkspacePick
               <DialogTitle className="font-headline text-xl text-[#ffffff]">Select Workspace</DialogTitle>
             </div>
             <DialogDescription className="text-[#858585] text-xs leading-relaxed">
-              Octamind AI supports two modes: Local Path (for backend access) or Browser API (for client-side local folder access).
+              CaramelPepper supports two modes: Local Path (for backend access) or Browser API (for client-side local folder access).
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -141,7 +142,7 @@ export function WorkspacePickerModal({ isOpen, onSelect, onSkip }: WorkspacePick
                 className="bg-[#1e1e1e] border-[#3c3c3c] focus:ring-[#007acc] h-10 text-[#ffffff] font-mono text-sm"
               />
               <p className="text-[11px] text-[#858585]">
-                Only works if the Octamind AI backend is running on your machine.
+                Only works if the CaramelPepper backend is running on your machine.
               </p>
             </div>
 

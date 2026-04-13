@@ -3,14 +3,14 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 /**
- * Main Electron process for Octamind AI.
+ * Main Electron process for CaramelPepper.
  * Spawns the native window and handles IPC communication with the Next.js frontend.
  */
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    title: 'Octamind AI',
+    title: 'CaramelPepper',
     backgroundColor: '#1e1e1e',
     show: false, // Do not show the window until it is ready to be painted
     webPreferences: {
@@ -59,4 +59,4 @@ app.on('window-all-closed', () => {
 });
 
 // Example IPC handler to test the bridge
-ipcMain.handle('ping', () => 'Octamind AI Bridge: Online');
+ipcMain.handle('ping', () => 'CaramelPepper Bridge: Online');

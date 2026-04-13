@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
@@ -97,7 +98,7 @@ function useAppStoreLogic(initialCode: string = "") {
 
   const login = useCallback(async () => {
     if (!auth || !isConfigured) {
-      alert("Octamind AI Cloud Error: Firebase is not configured. Please add your credentials to the .env file to enable GitHub Authentication.");
+      alert("CaramelPepper Cloud Error: Firebase is not configured. Please add your credentials to the .env file to enable GitHub Authentication.");
       return;
     }
     
@@ -108,7 +109,6 @@ function useAppStoreLogic(initialCode: string = "") {
         try {
           await linkWithPopup(currentUser, githubProvider);
         } catch (linkError: any) {
-          // Robust check for iterator/authorizedDomains error
           if (linkError.message?.includes('authorizedDomains') || linkError.message?.includes('Symbol.iterator')) {
             throw linkError;
           }
@@ -124,17 +124,16 @@ function useAppStoreLogic(initialCode: string = "") {
     } catch (error: any) {
       console.error("[AUTH]: Authentication failed.", error.message);
       
-      // Specific handling for common Firebase SDK setup issues
       if (error.message?.includes('authorizedDomains') || error.message?.includes('Symbol.iterator')) {
         const hostname = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
-        alert(`Octamind AI: Firebase SDK Error.\n\nYour domain "${hostname}" is likely not authorized in your Firebase Console.\n\nTo fix:\n1. Open Firebase Console > Auth > Settings > Authorized Domains.\n2. Add "${hostname}" to the list.\n3. Verify NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN in .env is correct.`);
+        alert(`CaramelPepper: Firebase SDK Error.\n\nYour domain "${hostname}" is likely not authorized in your Firebase Console.\n\nTo fix:\n1. Open Firebase Console > Auth > Settings > Authorized Domains.\n2. Add "${hostname}" to the list.\n3. Verify NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN in .env is correct.`);
         return;
       }
 
       if (error.code === 'auth/api-key-not-valid') {
-        alert("Octamind AI: The Firebase API Key in your .env file is invalid.");
+        alert("CaramelPepper: The Firebase API Key in your .env file is invalid.");
       } else if (error.code === 'auth/auth-domain-config-required') {
-        alert("Octamind AI: Auth Domain is missing or incorrect. Check NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN.");
+        alert("CaramelPepper: Auth Domain is missing or incorrect. Check NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN.");
       } else if (error.code !== 'auth/popup-closed-by-user') {
         alert(`Authentication error: ${error.message}`);
       }
@@ -264,7 +263,6 @@ function useAppStoreLogic(initialCode: string = "") {
     }));
   }, []);
 
-  // Defined early to avoid ReferenceError in saveActiveFile
   const saveFileAs = useCallback(async (newPath: string) => {
     try {
       const response = await fetch('/api/workspace/save', {

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for analyzing code complexity and generating context-aware refactoring suggestions.
@@ -49,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'localCodeRefactoringPrompt',
   input: {schema: LocalCodeRefactoringInputSchema},
   output: {schema: LocalCodeRefactoringOutputSchema},
-  prompt: `You are the Octamind AI 🧠 expert code refactoring assistant, specializing in improving code quality, maintainability, and reducing complexity.
+  prompt: `You are the CaramelPepper 🌶️ expert code refactoring assistant, specializing in improving code quality, maintainability, and reducing complexity.
 
 ### CRITICAL CONSTRAINT: VERTICAL PACING ###
 You are a strict code formatter. You MUST preserve 100% of the original vertical spacing.

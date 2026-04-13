@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <string>
@@ -8,7 +9,7 @@
  * @file prompt_templates.hpp
  * @namespace CaramelPepper::AI
  * 
- * Centralized utility for constructing system prompts for the Octamind AI 
+ * Centralized utility for constructing system prompts for the CaramelPepper 
  * local refactoring engine. Focuses on code integrity, vertical pacing, 
  * and cognitive readability.
  */
@@ -31,7 +32,7 @@ inline std::string buildPrompt(
     std::ostringstream oss;
 
     oss << "### SYSTEM ROLE ###\n"
-        << "You are the Octamind AI 🧠 local AI refactoring engine. Your output is consumed directly by a code diffing tool.\n\n"
+        << "You are the CaramelPepper 🌶️ local AI refactoring engine. Your output is consumed directly by a code diffing tool.\n\n"
         
         << "### CRITICAL CONSTRAINT: ABSOLUTE VERTICAL PACING ###\n"
         << "You MUST preserve the exact vertical rhythm of the original code. Do not delete empty lines between logical blocks. "

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react"
@@ -18,20 +19,20 @@ export function CookieConsent({ onConsent }: CookieConsentProps) {
   const [isVisible, setIsVisible] = React.useState(false)
 
   React.useEffect(() => {
-    const consent = localStorage.getItem("octamind-cookie-consent")
+    const consent = localStorage.getItem("caramelpepper-cookie-consent")
     if (!consent) {
       setIsVisible(true)
     }
   }, [])
 
   const handleAccept = () => {
-    localStorage.setItem("octamind-cookie-consent", "true")
+    localStorage.setItem("caramelpepper-cookie-consent", "true")
     setIsVisible(false)
     onConsent()
   }
 
   const handleDecline = () => {
-    localStorage.setItem("octamind-cookie-consent", "declined")
+    localStorage.setItem("caramelpepper-cookie-consent", "declined")
     setIsVisible(false)
     onConsent()
   }
@@ -53,7 +54,7 @@ export function CookieConsent({ onConsent }: CookieConsentProps) {
                 Workspace Persistence
               </DialogTitle>
               <DialogDescription className="text-sm text-[#858585] leading-relaxed">
-                Octamind AI uses essential cookies and local storage to persist your IDE configuration, 
+                CaramelPepper uses essential cookies and local storage to persist your IDE configuration, 
                 workspace roots, and editor preferences across sessions.
               </DialogDescription>
             </div>
