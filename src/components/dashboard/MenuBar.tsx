@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   Code,
   FileOutput,
-  Brain
+  Brain,
+  Layout
 } from "lucide-react"
 import {
   Menubar,
@@ -23,6 +24,9 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 import { useAppStore } from "@/store/use-app-store"
+import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 interface MenuBarProps {
   onNewFile?: () => void;
@@ -124,7 +128,29 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
             <span className="text-[9px] font-bold text-[#007acc] uppercase">Unsaved Changes</span>
           </div>
         )}
-        <div className="text-[10px] text-[#858585] font-mono truncate max-w-[300px]">
+        
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={store.toggleAnalysisPanel}
+                className={cn(
+                  "h-7 w-7 transition-colors",
+                  store.isAnalysisPanelCollapsed ? "text-[#858585] hover:text-[#cccccc]" : "text-[#007acc] hover:bg-[#007acc]/10"
+                )}
+              >
+                <Layout className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+              {store.isAnalysisPanelCollapsed ? "Open Analysis Panel" : "Close Analysis Panel"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <div className="text-[10px] text-[#858585] font-mono truncate max-w-[200px]">
           {store.activeFilePath || "No File Open"}
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react"
@@ -81,7 +82,7 @@ export function WorkspaceLayout({
 
         {!store.isSidebarCollapsed && <ResizeHandle direction="vertical" id="sidebar-resizer" />}
 
-        <Panel id="main-content-panel" order={2} defaultSize={store.isSidebarCollapsed ? 97 : 85}>
+        <Panel id="main-content-panel" order={2} defaultSize={store.isSidebarCollapsed ? (store.isAnalysisPanelCollapsed ? 97 : 77) : (store.isAnalysisPanelCollapsed ? 82 : 65)}>
           <PanelGroup id="workspace-vertical-group" direction="vertical" autoSaveId="octamind-vertical-layout">
             <Panel id="editor-section-panel" order={1} defaultSize={80} minSize={20}>
               <PanelGroup id="editor-diff-group" direction="horizontal" autoSaveId="octamind-editor-diff-layout">
@@ -113,16 +114,23 @@ export function WorkspaceLayout({
           </PanelGroup>
         </Panel>
 
-        <ResizeHandle direction="vertical" id="right-panel-resizer" />
+        {!store.isAnalysisPanelCollapsed && <ResizeHandle direction="vertical" id="right-panel-resizer" />}
 
         <Panel
           id="right-analysis-panel"
           order={3}
-          defaultSize={20}
-          minSize={15}
-          maxSize={30}
+          defaultSize={store.isAnalysisPanelCollapsed ? 0 : 20}
+          minSize={store.isAnalysisPanelCollapsed ? 0 : 15}
+          maxSize={store.isAnalysisPanelCollapsed ? 0 : 30}
+          collapsible={true}
+          onCollapse={() => {
+            if (!store.isAnalysisPanelCollapsed) store.toggleAnalysisPanel();
+          }}
+          onExpand={() => {
+            if (store.isAnalysisPanelCollapsed) store.toggleAnalysisPanel();
+          }}
         >
-          {analysis}
+          {!store.isAnalysisPanelCollapsed && analysis}
         </Panel>
       </PanelGroup>
     </div>
