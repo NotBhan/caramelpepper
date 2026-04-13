@@ -24,15 +24,15 @@ import {
 } from "@/components/ui/menubar"
 import { useAppStore } from "@/store/use-app-store"
 
-export function MenuBar() {
+interface MenuBarProps {
+  onNewFile?: () => void;
+}
+
+export function MenuBar({ onNewFile }: MenuBarProps) {
   const store = useAppStore();
 
   const handleOpenLocalFile = async () => {
     await store.openLocalFile();
-  }
-
-  const handleOpenSingleFile = () => {
-    store.newFile();
   }
 
   const handleOpenFolder = () => {
@@ -57,7 +57,7 @@ export function MenuBar() {
               Open Browser File...
               <MenubarShortcut>Ctrl+O</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={handleOpenSingleFile} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
+            <MenubarItem onClick={onNewFile} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
               <FileOutput className="w-3.5 h-3.5" />
               New Scratchpad...
             </MenubarItem>

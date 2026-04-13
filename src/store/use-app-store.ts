@@ -238,31 +238,6 @@ function useAppStoreLogic(initialCode: string = "") {
     }
   }, []);
 
-  const newFile = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      code: "",
-      activeFilePath: "untitled.ts",
-      originalMetrics: calculateComplexity(""),
-      isDiffOpen: false,
-      proposedCode: "",
-      isDirty: false,
-      activeView: 'editor'
-    }));
-  }, []);
-
-  const closeActiveFile = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      code: "",
-      activeFilePath: null,
-      originalMetrics: null,
-      isDiffOpen: false,
-      proposedCode: "",
-      isDirty: false,
-    }));
-  }, []);
-
   const saveFileAs = useCallback(async (newPath: string) => {
     try {
       const response = await fetch('/api/workspace/save', {
@@ -286,7 +261,7 @@ function useAppStoreLogic(initialCode: string = "") {
   }, [state.code, state.workspaceRoot, fetchWorkspaceTree]);
 
   const saveActiveFile = useCallback(async () => {
-    if (!state.activeFilePath || state.activeFilePath === 'untitled.ts') {
+    if (!state.activeFilePath || state.activeFilePath.startsWith('untitled')) {
       const newName = prompt("Enter file path to save as:");
       if (newName) await saveFileAs(newName);
       return;
@@ -304,6 +279,31 @@ function useAppStoreLogic(initialCode: string = "") {
       console.error("[WORKSPACE]: Save failed", err);
     }
   }, [state.activeFilePath, state.code, saveFileAs]);
+
+  const newFile = useCallback((extension: string = "ts") => {
+    setState(prev => ({
+      ...prev,
+      code: "",
+      activeFilePath: `untitled.${extension}`,
+      originalMetrics: calculateComplexity(""),
+      isDiffOpen: false,
+      proposedCode: "",
+      isDirty: false,
+      activeView: 'editor'
+    }));
+  }, []);
+
+  const closeActiveFile = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      code: "",
+      activeFilePath: null,
+      originalMetrics: null,
+      isDiffOpen: false,
+      proposedCode: "",
+      isDirty: false,
+    }));
+  }, []);
 
   const setInferenceProvider = useCallback((provider: InferenceProvider) => {
     const isCloud = ['openai', 'anthropic', 'gemini'].includes(provider);

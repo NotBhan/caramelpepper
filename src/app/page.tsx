@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react"
@@ -14,6 +15,7 @@ import { SettingsModal } from "@/components/dashboard/SettingsModal"
 import { MenuBar } from "@/components/dashboard/MenuBar"
 import { WorkspacePickerModal } from "@/components/dashboard/WorkspacePickerModal"
 import { CookieConsent } from "@/components/dashboard/CookieConsent"
+import { NewFileModal } from "@/components/dashboard/NewFileModal"
 import { getLanguageFromPath } from "@/lib/language-mapper"
 
 export default function Dashboard() {
@@ -22,11 +24,12 @@ export default function Dashboard() {
   const [refactorOutput, setRefactorOutput] = React.useState<any>(null)
   const [isBusy, setIsBusy] = React.useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false)
+  const [isNewFileModalOpen, setIsNewFileModalOpen] = React.useState(false)
   const [hasConsented, setHasConsented] = React.useState<boolean | null>(null)
   const { toast } = useToast()
 
   React.useEffect(() => {
-    const consent = localStorage.getItem("octamind-cookie-consent")
+    const consent = localStorage.getItem("caramelpepper-cookie-consent")
     setHasConsented(!!consent)
   }, [])
 
@@ -103,7 +106,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <MenuBar />
+      <MenuBar onNewFile={() => setIsNewFileModalOpen(true)} />
       <div className="flex-1 min-h-0">
         <WorkspaceLayout
           activeView={store.activeView}
@@ -132,7 +135,7 @@ export default function Dashboard() {
               onClose={store.closeActiveFile}
               activeFilePath={store.activeFilePath}
               onOpenWorkspace={store.resetWorkspaceRoot}
-              onNewFile={store.newFile}
+              onNewFile={() => setIsNewFileModalOpen(true)}
             />
           }
           refactor={
@@ -178,6 +181,11 @@ export default function Dashboard() {
         onSaveKey={store.saveApiKey}
         ollamaConfig={store.ollamaConfig}
         onSaveOllama={store.saveOllamaConfig}
+      />
+
+      <NewFileModal 
+        isOpen={isNewFileModalOpen} 
+        onOpenChange={setIsNewFileModalOpen} 
       />
       
       <CookieConsent onConsent={() => setHasConsented(true)} />
