@@ -12,7 +12,8 @@ import {
   Code,
   FileOutput,
   Brain,
-  Layout
+  Layout,
+  ChevronRight
 } from "lucide-react"
 import {
   Menubar,
@@ -42,6 +43,20 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
   const handleOpenFolder = () => {
     store.resetWorkspaceRoot();
   }
+
+  // Calculate relative path for breadcrumb display
+  const relativePath = React.useMemo(() => {
+    if (!store.activeFilePath) return null;
+    if (!store.workspaceRoot) return store.activeFilePath;
+    
+    // Remove workspace root from path to show relative structure
+    return store.activeFilePath.replace(store.workspaceRoot, '').replace(/^[/\\]/, '');
+  }, [store.activeFilePath, store.workspaceRoot]);
+
+  const workspaceName = React.useMemo(() => {
+    if (!store.workspaceRoot) return null;
+    return store.workspaceRoot.split(/[/\\]/).pop() || "workspace";
+  }, [store.workspaceRoot]);
 
   return (
     <div className="h-8 w-full bg-[#333333] border-b border-[#3c3c3c] flex items-center px-2 z-50">
@@ -125,10 +140,27 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
         {store.isDirty && (
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-[#007acc] animate-pulse" />
-            <span className="text-[9px] font-bold text-[#007acc] uppercase">Unsaved Changes</span>
+            <span className="text-[9px] font-bold text-[#007acc] uppercase">Unsaved</span>
           </div>
         )}
         
+        {/* Breadcrumb Display */}
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1e1e1e] border border-[#3c3c3c] max-w-[300px] overflow-hidden">
+          {workspaceName ? (
+            <>
+              <span className="text-[10px] font-bold text-[#007acc] uppercase tracking-tighter shrink-0">{workspaceName}</span>
+              <ChevronRight className="w-2.5 h-2.5 text-[#858585] shrink-0" />
+              <span className="text-[10px] text-[#cccccc] font-mono truncate">
+                {relativePath || "IDE_ROOT"}
+              </span>
+            </>
+          ) : (
+            <span className="text-[10px] text-[#858585] font-mono truncate italic">
+              {store.activeFilePath || "IDLE_SCRATCHPAD"}
+            </span>
+          )}
+        </div>
+
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -149,10 +181,6 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
-        <div className="text-[10px] text-[#858585] font-mono truncate max-w-[200px]">
-          {store.activeFilePath || "No File Open"}
-        </div>
       </div>
     </div>
   )
