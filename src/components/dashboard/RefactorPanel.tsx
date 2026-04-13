@@ -1,10 +1,13 @@
+
 "use client"
 
 import React from "react"
-import { Wand2, Check, MessageSquareCode, Terminal } from "lucide-react"
+import { Wand2, Check, MessageSquareCode, Terminal, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { type LocalCodeRefactoringOutput } from "@/ai/flows/local-code-refactoring"
+import { useAppStore } from "@/store/use-app-store"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface RefactorPanelProps {
   suggestions: LocalCodeRefactoringOutput | null;
@@ -13,6 +16,8 @@ interface RefactorPanelProps {
 }
 
 export function RefactorPanel({ suggestions, isRefactoring, onApply }: RefactorPanelProps) {
+  const store = useAppStore();
+
   if (isRefactoring) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-3 bg-[#1e1e1e]">
@@ -27,12 +32,33 @@ export function RefactorPanel({ suggestions, isRefactoring, onApply }: RefactorP
 
   if (!suggestions) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center bg-[#1e1e1e] border-t border-[#3c3c3c]">
-        <div className="flex items-center gap-2 text-[#858585] mb-2">
-          <Terminal className="w-4 h-4" />
-          <span className="text-[10px] font-mono">pepper-shell v1.0</span>
+      <div className="h-full flex flex-col bg-[#1e1e1e] border-t border-[#3c3c3c]">
+        <div className="px-4 py-2 border-b border-[#3c3c3c] flex items-center justify-between bg-[#252526]">
+          <div className="flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-[#858585]" />
+            <h3 className="text-xs font-bold text-[#ffffff]">pepper-shell v1.0</h3>
+          </div>
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={store.toggleBottomPanel}
+                  className="h-6 w-6 text-[#858585] hover:text-[#ffffff] hover:bg-[#333333]"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+                Minimize Panel
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        <p className="text-xs text-[#858585]">Run an analysis to generate refactoring suggestions.</p>
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
+          <p className="text-xs text-[#858585]">Run an analysis to generate refactoring suggestions.</p>
+        </div>
       </div>
     )
   }
@@ -44,7 +70,7 @@ export function RefactorPanel({ suggestions, isRefactoring, onApply }: RefactorP
           <MessageSquareCode className="w-4 h-4 text-[#007acc]" />
           <h3 className="text-xs font-bold text-[#ffffff]">Refactoring Strategy</h3>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {suggestions.refactoredCode && (
             <Button 
               size="sm" 
@@ -54,6 +80,23 @@ export function RefactorPanel({ suggestions, isRefactoring, onApply }: RefactorP
               <Check className="w-3 h-3 mr-1" /> Commit Changes
             </Button>
           )}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={store.toggleBottomPanel}
+                  className="h-6 w-6 text-[#858585] hover:text-[#ffffff] hover:bg-[#333333]"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+                Minimize Panel
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 

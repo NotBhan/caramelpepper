@@ -13,7 +13,10 @@ import {
   FileOutput,
   Brain,
   Layout,
-  ChevronRight
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Terminal
 } from "lucide-react"
 import {
   Menubar,
@@ -136,7 +139,7 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
         </MenubarMenu>
       </Menubar>
 
-      <div className="ml-auto flex items-center gap-4 pr-4">
+      <div className="ml-auto flex items-center gap-3 pr-4">
         {store.isDirty && (
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-[#007acc] animate-pulse" />
@@ -145,7 +148,7 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
         )}
         
         {/* Breadcrumb Display */}
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1e1e1e] border border-[#3c3c3c] max-w-[300px] overflow-hidden">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1e1e1e] border border-[#3c3c3c] max-w-[240px] overflow-hidden">
           {workspaceName ? (
             <>
               <span className="text-[10px] font-bold text-[#007acc] uppercase tracking-tighter shrink-0">{workspaceName}</span>
@@ -161,26 +164,49 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
           )}
         </div>
 
-        <TooltipProvider delayDuration={0}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={store.toggleAnalysisPanel}
-                className={cn(
-                  "h-7 w-7 transition-colors",
-                  store.isAnalysisPanelCollapsed ? "text-[#858585] hover:text-[#cccccc]" : "text-[#007acc] hover:bg-[#007acc]/10"
-                )}
-              >
-                <Layout className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
-              {store.isAnalysisPanelCollapsed ? "Open Analysis Panel" : "Close Analysis Panel"}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex items-center gap-1 ml-2 border-l border-[#3c3c3c] pl-3">
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={store.toggleBottomPanel}
+                  className={cn(
+                    "h-7 w-7 transition-colors",
+                    store.isBottomPanelCollapsed ? "text-[#858585] hover:text-[#cccccc]" : "text-[#007acc] hover:bg-[#007acc]/10"
+                  )}
+                >
+                  <Terminal className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+                {store.isBottomPanelCollapsed ? "Open pepper-shell" : "Minimize pepper-shell"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={store.toggleAnalysisPanel}
+                  className={cn(
+                    "h-7 w-7 transition-colors",
+                    store.isAnalysisPanelCollapsed ? "text-[#858585] hover:text-[#cccccc]" : "text-[#007acc] hover:bg-[#007acc]/10"
+                  )}
+                >
+                  <Layout className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+                {store.isAnalysisPanelCollapsed ? "Open Analysis Panel" : "Close Analysis Panel"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
     </div>
   )

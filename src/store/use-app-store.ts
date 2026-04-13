@@ -47,6 +47,7 @@ export interface AppState {
   isMobileMenuOpen: boolean;
   isSidebarCollapsed: boolean;
   isAnalysisPanelCollapsed: boolean;
+  isBottomPanelCollapsed: boolean;
 }
 
 const AppContext = createContext<ReturnType<typeof useAppStoreLogic> | null>(null);
@@ -74,6 +75,7 @@ function useAppStoreLogic(initialCode: string = "") {
     isMobileMenuOpen: false,
     isSidebarCollapsed: false,
     isAnalysisPanelCollapsed: false,
+    isBottomPanelCollapsed: false,
   });
 
   useEffect(() => {
@@ -426,6 +428,10 @@ function useAppStoreLogic(initialCode: string = "") {
     setState(prev => ({ ...prev, isAnalysisPanelCollapsed: !prev.isAnalysisPanelCollapsed }));
   }, []);
 
+  const toggleBottomPanel = useCallback(() => {
+    setState(prev => ({ ...prev, isBottomPanelCollapsed: !prev.isBottomPanelCollapsed }));
+  }, []);
+
   const toggleMobileMenu = useCallback(() => {
     setState(prev => ({ ...prev, isMobileMenuOpen: !prev.isMobileMenuOpen }));
   }, []);
@@ -459,6 +465,7 @@ function useAppStoreLogic(initialCode: string = "") {
     setActiveView,
     toggleSidebar,
     toggleAnalysisPanel,
+    toggleBottomPanel,
     toggleMobileMenu,
     closeMobileMenu,
     isGuest: state.user?.isAnonymous || false

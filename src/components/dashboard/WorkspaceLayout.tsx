@@ -84,7 +84,7 @@ export function WorkspaceLayout({
 
         <Panel id="main-content-panel" order={2} defaultSize={store.isSidebarCollapsed ? (store.isAnalysisPanelCollapsed ? 97 : 77) : (store.isAnalysisPanelCollapsed ? 82 : 65)}>
           <PanelGroup id="workspace-vertical-group" direction="vertical" autoSaveId="octamind-vertical-layout">
-            <Panel id="editor-section-panel" order={1} defaultSize={80} minSize={20}>
+            <Panel id="editor-section-panel" order={1} defaultSize={store.isBottomPanelCollapsed ? 100 : 80} minSize={20}>
               <PanelGroup id="editor-diff-group" direction="horizontal" autoSaveId="octamind-editor-diff-layout">
                 <Panel id="primary-editor-panel" order={1} defaultSize={isDiffOpen ? 40 : 100} minSize={10}>
                   <div className="h-full">
@@ -104,9 +104,21 @@ export function WorkspaceLayout({
               </PanelGroup>
             </Panel>
 
-            <ResizeHandle direction="horizontal" id="bottom-panel-resizer" />
+            {!store.isBottomPanelCollapsed && <ResizeHandle direction="horizontal" id="bottom-panel-resizer" />}
 
-            <Panel id="bottom-console-panel" order={2} defaultSize={20} minSize={0} collapsible>
+            <Panel 
+              id="bottom-console-panel" 
+              order={2} 
+              defaultSize={store.isBottomPanelCollapsed ? 0 : 20} 
+              minSize={store.isBottomPanelCollapsed ? 0 : 10} 
+              collapsible={true}
+              onCollapse={() => {
+                if (!store.isBottomPanelCollapsed) store.toggleBottomPanel();
+              }}
+              onExpand={() => {
+                if (store.isBottomPanelCollapsed) store.toggleBottomPanel();
+              }}
+            >
               <div className="h-full w-full overflow-hidden">
                 {bottom}
               </div>
