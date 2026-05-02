@@ -44,11 +44,9 @@ export function DiffViewer({
   React.useEffect(() => {
     return () => {
       if (editorRef.current) {
-        // Synchronously kill all internal Monaco timeouts, hover services, and workers
         editorRef.current.dispose();
       }
       if (monacoRef.current) {
-        // Prevent memory leaks by disposing of associated text models
         const models = monacoRef.current.editor.getModels();
         models.forEach((model: any) => {
           if (model.uri.toString().includes('file:///original-') || 
@@ -68,7 +66,7 @@ export function DiffViewer({
       diff: Math.abs(diff),
       isBetter,
       icon: isBetter ? TrendingDown : TrendingUp,
-      color: isBetter ? "text-green-500" : "text-red-500"
+      color: isBetter ? "text-green-500" : "text-destructive"
     };
   };
 
@@ -85,7 +83,7 @@ export function DiffViewer({
     padding: { top: 16 },
     fontFamily: 'Source Code Pro, monospace',
     wordWrap: 'on' as const,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#000000',
     folding: true,
     lineNumbers: 'on' as const,
     originalEditable: false,
@@ -93,17 +91,17 @@ export function DiffViewer({
   }), []);
 
   return (
-    <div className="flex flex-col h-full bg-[#1e1e1e] relative">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[#3c3c3c] bg-[#252526]">
+    <div className="flex flex-col h-full bg-background relative">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="border-[#007acc]/30 text-[#007acc] bg-[#007acc]/5 font-mono text-[10px]">
+          <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-mono text-[10px]">
             {activeFilePath?.split(/[/\\]/).pop()?.toUpperCase() || "PROPOSED_REFACTOR.TS"}
           </Badge>
           
           {cyc && (
-            <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-[#2a2d2e] border border-[#3c3c3c]">
-              <span className="text-[10px] text-[#858585] uppercase font-bold">Complexity</span>
-              <span className="text-[11px] font-mono text-[#cccccc]">
+            <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-background border border-border">
+              <span className="text-[10px] text-muted-foreground uppercase font-bold">Complexity</span>
+              <span className="text-[11px] font-mono text-foreground/80">
                 {originalMetrics?.cyclomatic} → {proposedMetrics?.cyclomatic}
               </span>
               <cyc.icon className={cn("w-3 h-3", cyc.color)} />
@@ -116,7 +114,7 @@ export function DiffViewer({
             variant="ghost" 
             size="sm" 
             onClick={onReject}
-            className="h-8 gap-2 text-[#cccccc] hover:text-red-400 hover:bg-red-400/10"
+            className="h-8 gap-2 text-foreground/80 hover:text-destructive hover:bg-destructive/10"
           >
             <X className="w-3.5 h-3.5" />
             Discard
@@ -124,7 +122,7 @@ export function DiffViewer({
           <Button 
             size="sm" 
             onClick={onAccept}
-            className="h-8 gap-2 bg-green-700 hover:bg-green-600 text-[#ffffff] font-bold"
+            className="h-8 gap-2 bg-green-700 hover:bg-green-600 text-white font-bold"
           >
             <Check className="w-3.5 h-3.5" />
             Accept Changes
@@ -132,7 +130,7 @@ export function DiffViewer({
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 bg-background">
         <DiffEditor
           height="100%"
           original={original}

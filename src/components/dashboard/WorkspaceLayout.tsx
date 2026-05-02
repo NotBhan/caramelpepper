@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react"
@@ -39,15 +38,15 @@ export function WorkspaceLayout({
   }, [])
 
   if (!isMounted) {
-    return <div className="h-full w-full bg-[#1e1e1e]" />
+    return <div className="h-full w-full bg-background" />
   }
 
   const isWideView = activeView === 'dashboard' || activeView === 'vault' || activeView === 'history' || activeView === 'shortcuts' || activeView === 'api_reference';
 
   if (isWideView) {
     return (
-      <div className="h-full w-full flex bg-[#1e1e1e] overflow-hidden">
-        <div className="w-auto h-full shrink-0 border-r border-[#3c3c3c]">
+      <div className="h-full w-full flex bg-background overflow-hidden">
+        <div className="w-auto h-full shrink-0 border-r border-border">
           {sidebar}
         </div>
         <div className="flex-1 min-w-0 h-full overflow-hidden">
@@ -63,7 +62,7 @@ export function WorkspaceLayout({
   }
 
   return (
-    <div className="h-full w-full overflow-hidden bg-[#1e1e1e] text-[#cccccc] flex flex-col">
+    <div className="h-full w-full overflow-hidden bg-background text-foreground/80 flex flex-col">
       <PanelGroup 
         id="root-layout-group"
         direction="horizontal" 
@@ -75,7 +74,7 @@ export function WorkspaceLayout({
           defaultSize={store.isSidebarCollapsed ? 3 : 15}
           minSize={store.isSidebarCollapsed ? 3 : 10}
           maxSize={store.isSidebarCollapsed ? 3 : 25}
-          className="bg-[#252526]"
+          className="bg-card"
         >
           {sidebar}
         </Panel>
@@ -87,7 +86,7 @@ export function WorkspaceLayout({
             <Panel id="editor-section-panel" order={1} defaultSize={store.isBottomPanelCollapsed ? 100 : 80} minSize={20}>
               <PanelGroup id="editor-diff-group" direction="horizontal" autoSaveId="octamind-editor-diff-layout">
                 <Panel id="primary-editor-panel" order={1} defaultSize={isDiffOpen ? 40 : 100} minSize={10}>
-                  <div className="h-full">
+                  <div className="h-full bg-background">
                     {editor}
                   </div>
                 </Panel>
@@ -96,7 +95,7 @@ export function WorkspaceLayout({
 
                 {isDiffOpen && (
                   <Panel id="diff-viewer-panel" order={2} defaultSize={60} minSize={10}>
-                    <div className="h-full">
+                    <div className="h-full bg-background">
                       {refactor}
                     </div>
                   </Panel>
@@ -119,7 +118,7 @@ export function WorkspaceLayout({
                 if (store.isBottomPanelCollapsed) store.toggleBottomPanel();
               }}
             >
-              <div className="h-full w-full overflow-hidden">
+              <div className="h-full w-full overflow-hidden bg-background">
                 {bottom}
               </div>
             </Panel>
@@ -162,13 +161,13 @@ function ResizeHandle({
     <PanelResizeHandle
       id={id}
       className={cn(
-        "relative flex items-center justify-center bg-[#1e1e1e] transition-colors hover:bg-[#007acc]/50 group",
-        direction === "vertical" ? "w-1 cursor-col-resize border-l border-[#3c3c3c]" : "h-1 cursor-row-resize border-t border-[#3c3c3c]",
+        "relative flex items-center justify-center bg-background transition-colors hover:bg-primary/50 group",
+        direction === "vertical" ? "w-1 cursor-col-resize border-l border-border" : "h-1 cursor-row-resize border-t border-border",
         className
       )}
     >
       <div className={cn(
-        "bg-[#3c3c3c] group-hover:bg-[#ffffff]/50 transition-colors",
+        "bg-border group-hover:bg-foreground/50 transition-colors",
         direction === "vertical" ? "h-8 w-[1px]" : "w-8 h-[1px]"
       )} />
     </PanelResizeHandle>

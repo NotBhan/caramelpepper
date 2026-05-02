@@ -47,15 +47,15 @@ const ActivityIcon = ({ icon: Icon, label, active, onClick }: ActivityIconProps)
           className={cn(
             "w-full aspect-square flex items-center justify-center transition-all relative group",
             active 
-              ? "text-[#ffffff]" 
-              : "text-[#858585] hover:text-[#cccccc]"
+              ? "text-foreground" 
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           {active && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />}
           <Icon className="w-5 h-5" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="right" className="bg-[#1a1a1a] border-[#2a2a2a] text-xs">
+      <TooltipContent side="right" className="bg-popover border-border text-xs">
         {label}
       </TooltipContent>
     </Tooltip>
@@ -108,7 +108,7 @@ export function Sidebar({
       store.isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       {/* Activity Bar */}
-      <div className="w-12 bg-[#0a0a0a] flex flex-col items-center py-2 shrink-0 border-r border-border">
+      <div className="w-12 bg-secondary flex flex-col items-center py-2 shrink-0 border-r border-border">
         <ActivityIcon 
           icon={LayoutGrid} 
           label="Dashboard" 
@@ -149,11 +149,11 @@ export function Sidebar({
           
           <Popover>
             <PopoverTrigger asChild>
-              <button className="w-full aspect-square flex items-center justify-center text-[#858585] hover:text-[#cccccc]">
+              <button className="w-full aspect-square flex items-center justify-center text-muted-foreground hover:text-foreground">
                 {store.user && !isGuest ? (
                   <Avatar className="w-7 h-7 border border-border">
                     <AvatarImage src={store.user.photoURL || undefined} />
-                    <AvatarFallback className="bg-[#1e1e1e] text-[10px] text-[#ffffff]">
+                    <AvatarFallback className="bg-background text-[10px] text-foreground">
                       {store.user.displayName?.[0] || store.user.email?.[0] || "?"}
                     </AvatarFallback>
                   </Avatar>
@@ -207,9 +207,9 @@ export function Sidebar({
       {!store.isSidebarCollapsed && (
         <aside className={cn(
           "flex-1 flex flex-col bg-card transition-all duration-200 overflow-hidden",
-          activeView === 'dashboard' || activeView === 'vault' || activeView === 'history' ? "w-0 opacity-0" : "w-[240px] opacity-100"
+          activeView === 'dashboard' || activeView === 'vault' || activeView === 'history' || activeView === 'shortcuts' || activeView === 'api_reference' ? "w-0 opacity-0" : "w-[240px] opacity-100"
         )}>
-          <div className="p-3 border-b border-border flex items-center justify-between">
+          <div className="p-3 border-b border-border flex items-center justify-between bg-card">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline">
               {activeView === 'editor' ? 'Explorer' : 'Detective'}
             </span>
@@ -231,7 +231,7 @@ export function Sidebar({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto scroll-thin">
+          <div className="flex-1 overflow-y-auto scroll-thin bg-card">
             {activeView === 'editor' && (
               <div className="py-2">
                 {workspaceRoot ? (
@@ -267,7 +267,7 @@ export function Sidebar({
             )}
           </div>
 
-          <div className="p-3 border-t border-border">
+          <div className="p-3 border-t border-border bg-card">
             <div className="flex items-center gap-2 px-2 py-1.5 bg-background rounded-sm border border-border">
               <Flame className="w-3.5 h-3.5 text-primary" />
               <div className="flex flex-col">

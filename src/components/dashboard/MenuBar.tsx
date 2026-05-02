@@ -56,7 +56,7 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
   }, [store.workspaceRoot]);
 
   return (
-    <div className="h-9 w-full bg-[#0a0a0a] border-b border-border flex items-center px-2 z-50">
+    <div className="h-9 w-full bg-secondary border-b border-border flex items-center px-2 z-50">
       <div className="flex items-center gap-2 mr-4 px-2">
         <Flame className="w-4 h-4 text-primary" />
         <span className="text-[11px] font-bold text-foreground uppercase tracking-tight font-headline">CaramelPepper</span>

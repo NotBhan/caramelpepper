@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react"
@@ -132,28 +131,28 @@ export function SettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] bg-slate-900 border-slate-800 text-slate-100 p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[520px] bg-card border-border text-foreground p-0 overflow-hidden shadow-2xl">
         <div className="p-6 pb-4">
           <DialogHeader>
             <div className="flex items-center gap-2 mb-2">
-              <Settings className="w-5 h-5 text-[#007acc]" />
+              <Settings className="w-5 h-5 text-primary" />
               <DialogTitle className="font-headline text-xl">Engine Configuration</DialogTitle>
             </div>
-            <DialogDescription className="text-slate-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               Configure local or cloud inference. Credentials are stored in a secure backend vault.
             </DialogDescription>
           </DialogHeader>
         </div>
 
         <div className="px-6 pb-6 space-y-6">
-          <div className="p-1 bg-slate-950 border border-slate-800 rounded-lg flex">
+          <div className="p-1 bg-background border border-border rounded-lg flex">
             <button
               onClick={() => setActiveGroup('cloud')}
               className={cn(
                 "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold transition-all rounded-md",
                 activeGroup === 'cloud' 
-                  ? "bg-[#007acc] text-white shadow-lg" 
-                  : "text-slate-500 hover:text-slate-300"
+                  ? "bg-primary text-primary-foreground shadow-lg" 
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Cloud className="w-3.5 h-3.5" />
@@ -164,8 +163,8 @@ export function SettingsModal({
               className={cn(
                 "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold transition-all rounded-md",
                 activeGroup === 'local' 
-                  ? "bg-[#007acc] text-white shadow-lg" 
-                  : "text-slate-500 hover:text-slate-300"
+                  ? "bg-primary text-primary-foreground shadow-lg" 
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Laptop className="w-3.5 h-3.5" />
@@ -175,19 +174,19 @@ export function SettingsModal({
 
           <div className="space-y-4">
             {activeGroup === 'cloud' && isGuest ? (
-              <div className="py-8 px-4 text-center space-y-4 animate-in fade-in zoom-in duration-300 bg-slate-950/50 rounded-lg border border-slate-800/50 backdrop-blur-sm">
-                <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto shadow-inner">
+              <div className="py-8 px-4 text-center space-y-4 animate-in fade-in zoom-in duration-300 bg-background/50 rounded-lg border border-border/50 backdrop-blur-sm">
+                <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center mx-auto shadow-inner">
                   <Lock className="w-6 h-6 text-amber-500" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-slate-100">Premium APIs Locked</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed max-w-[240px] mx-auto">
+                  <h3 className="text-sm font-bold text-foreground">Premium APIs Locked</h3>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed max-w-[240px] mx-auto">
                     Cloud providers like Gemini, OpenAI, and Anthropic require a secure GitHub account to manage persistent credentials.
                   </p>
                 </div>
                 <Button 
                   onClick={() => store.login()}
-                  className="bg-white text-black hover:bg-slate-200 text-xs font-bold h-9 px-6 gap-2"
+                  className="bg-foreground text-background hover:bg-muted-foreground text-xs font-bold h-9 px-6 gap-2"
                 >
                   <Github className="w-3.5 h-3.5" />
                   Sign in with GitHub
@@ -196,7 +195,7 @@ export function SettingsModal({
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <Cpu className="w-3.5 h-3.5" />
                     Active Model Provider
                   </Label>
@@ -206,10 +205,10 @@ export function SettingsModal({
                       onProviderChange(v as InferenceProvider)
                     }}
                   >
-                    <SelectTrigger className="bg-slate-950 border-slate-800 h-10">
+                    <SelectTrigger className="bg-background border-border h-10">
                       <SelectValue placeholder="Select provider" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-100">
+                    <SelectContent className="bg-popover border-border text-foreground">
                       {activeGroup === 'cloud' ? (
                         <>
                           <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
@@ -230,7 +229,7 @@ export function SettingsModal({
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                           <Key className="w-3.5 h-3.5" />
                           {provider.toUpperCase()} API Key
                         </Label>
@@ -242,18 +241,18 @@ export function SettingsModal({
                           placeholder={keyStatus[provider] ? "••••••••••••••••" : "Enter API Key"}
                           value={tempKey}
                           onChange={(e) => setTempKey(e.target.value)}
-                          className="bg-slate-950 border-slate-800 focus:ring-[#007acc] h-10"
+                          className="bg-background border-border focus:ring-primary h-10"
                         />
                         <Button 
                           onClick={handleSaveKey} 
                           disabled={!tempKey || isSaving}
                           size="sm"
-                          className="bg-[#007acc] hover:bg-[#0062a3] text-[#ffffff] font-bold px-6 h-10"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-10"
                         >
                           Save
                         </Button>
                       </div>
-                      <p className="text-[10px] text-slate-500 flex items-center gap-1 italic">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1 italic">
                         <ShieldCheck className="w-3 h-3 text-green-500" />
                         Stored securely in backend secrets vault.
                       </p>
@@ -263,17 +262,17 @@ export function SettingsModal({
 
                 {activeGroup === 'local' && provider === 'ollama' && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-between">
+                    <div className="p-3 bg-background border border-border rounded-lg flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-[11px] font-bold text-slate-100 uppercase">Use Default URL</Label>
-                        <p className="text-[10px] text-slate-500 font-mono">http://127.0.0.1:11434</p>
+                        <Label className="text-[11px] font-bold text-foreground uppercase">Use Default URL</Label>
+                        <p className="text-[10px] text-muted-foreground font-mono">http://127.0.0.1:11434</p>
                       </div>
                       <Switch checked={useDefaultOllama} onCheckedChange={setUseDefaultOllama} />
                     </div>
 
                     {!useDefaultOllama && (
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                           <Globe className="w-3 h-3" />
                           Ollama Base URL
                         </Label>
@@ -281,13 +280,13 @@ export function SettingsModal({
                           placeholder="http://127.0.0.1:11434"
                           value={tempOllamaUrl}
                           onChange={(e) => setTempOllamaUrl(e.target.value)}
-                          className="bg-slate-950 border-slate-800 h-10"
+                          className="bg-background border-border h-10"
                         />
                       </div>
                     )}
 
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                         <Server className="w-3 h-3" />
                         Local Model Name
                       </Label>
@@ -295,7 +294,7 @@ export function SettingsModal({
                         placeholder="qwen2.5-coder"
                         value={tempOllamaModel}
                         onChange={(e) => setTempOllamaModel(e.target.value)}
-                        className="bg-slate-950 border-slate-800 h-10"
+                        className="bg-background border-border h-10"
                       />
                     </div>
                     <div className="flex gap-2 pt-2">
@@ -303,14 +302,14 @@ export function SettingsModal({
                         variant="outline"
                         onClick={() => testConnection(activeOllamaUrl, '/api/tags')}
                         disabled={isTesting}
-                        className="flex-1 border-slate-800 text-xs h-10"
+                        className="flex-1 border-border text-xs h-10"
                       >
                         Test Connection
                       </Button>
                       <Button 
                         onClick={handleSaveOllama}
                         disabled={isSaving || !tempOllamaModel}
-                        className="flex-1 bg-[#007acc] hover:bg-[#0062a3] text-[#ffffff] font-bold text-xs h-10"
+                        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-10"
                       >
                         Apply Config
                       </Button>
@@ -321,7 +320,7 @@ export function SettingsModal({
                 {activeGroup === 'local' && provider === 'llamacpp' && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                         <Globe className="w-3 h-3" />
                         llama.cpp Server URL
                       </Label>
@@ -329,7 +328,7 @@ export function SettingsModal({
                         placeholder="http://127.0.0.1:8080"
                         value={tempLlamacppUrl}
                         onChange={(e) => setTempLlamacppUrl(e.target.value)}
-                        className="bg-slate-950 border-slate-800 h-10"
+                        className="bg-background border-border h-10"
                       />
                     </div>
 
@@ -338,14 +337,14 @@ export function SettingsModal({
                         variant="outline"
                         onClick={() => testConnection(tempLlamacppUrl, '/health')}
                         disabled={isTesting}
-                        className="flex-1 border-slate-800 text-xs h-10"
+                        className="flex-1 border-border text-xs h-10"
                       >
                         Test Connection
                       </Button>
                       <Button 
                         onClick={handleSaveLlamacpp}
                         disabled={isSaving || !tempLlamacppUrl}
-                        className="flex-1 bg-[#007acc] hover:bg-[#0062a3] text-[#ffffff] font-bold text-xs h-10"
+                        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-10"
                       >
                         Apply Config
                       </Button>
