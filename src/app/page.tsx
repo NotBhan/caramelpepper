@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react"
@@ -29,7 +30,7 @@ export default function Dashboard() {
 
   React.useEffect(() => {
     const consent = localStorage.getItem("caramelpepper-cookie-consent")
-    setHasConsented(!!consent)
+    setHasConsented(consent === 'true')
   }, [])
 
   const handleAnalyze = async () => {
@@ -108,10 +109,20 @@ export default function Dashboard() {
   // Determine if the workspace picker should be shown automatically
   const isGitHubAuthenticated = store.user && !store.isGuest;
   const isWorkspaceActive = store.workspaceRoot !== null;
+  const isFileOpen = store.activeFilePath !== null;
+  
+  // The picker should only show if:
+  // 1. User has consented to cookies
+  // 2. Auth is loaded
+  // 3. User hasn't dismissed it manually or by picking a folder
+  // 4. No workspace is currently active
+  // 5. No file is currently open (to prevent interrupting a current session)
+  // 6. User isn't already logged in via GitHub (which implies they are advanced)
   const showPicker = hasConsented === true && 
                      !store.loadingAuth && 
                      !store.isPickerDismissed && 
                      !isWorkspaceActive && 
+                     !isFileOpen &&
                      !isGitHubAuthenticated;
 
   return (

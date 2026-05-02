@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react"
 import { type ComplexityMetrics, calculateComplexity } from "@/lib/complexity"
 import { readDirectoryRecursive } from "@/lib/browser-fs"
 import { auth, githubProvider, isConfigured } from "@/lib/firebase"
@@ -78,6 +78,100 @@ function useAppStoreLogic(initialCode: string = "") {
     isBottomPanelCollapsed: false,
   });
 
+  const isInitialized = useRef(false);
+
+  // Persistence Key Constants
+  const STORAGE_KEYS = {
+    WORKSPACE_ROOT: 'caramelpepper_workspace_root',
+    ACTIVE_FILE: 'caramelpepper_active_file',
+    PICKER_DISMISSED: 'caramelpepper_picker_dismissed',
+    SIDEBAR_COLLAPSED: 'caramelpepper_sidebar_collapsed',
+    ANALYSIS_COLLAPSED: 'caramelpepper_analysis_collapsed',
+    BOTTOM_COLLAPSED: 'caramelpepper_bottom_collapsed'
+  };
+
+  const fetchWorkspaceTree = useCallback(async (path?: string) => {
+    setState(prev => ({ ...prev, isFetchingTree: true }));
+    try {
+      const url = path ? `/api/workspace/tree?path=${encodeURIComponent(path)}` : '/api/workspace/tree';
+      const response = await fetch(url);
+      if (!response.ok) {
+        setState(prev => ({ ...prev, isFetchingTree: false }));
+        throw new Error("Failed to load workspace tree");
+      }
+      const data = await response.json();
+      setState(prev => ({ ...prev, fileTree: data, isFetchingTree: false }));
+    } catch (err) {
+      setState(prev => ({ ...prev, isFetchingTree: false }));
+      throw err;
+    }
+  }, []);
+
+  const openFile = useCallback(async (path: string, handle?: any) => {
+    try {
+      let content = "";
+      if (handle && handle.getFile) {
+        const file = await handle.getFile();
+        content = await file.text();
+      } else {
+        const response = await fetch(`/api/workspace/read?path=${encodeURIComponent(path)}`);
+        if (!response.ok) return;
+        content = await response.text();
+      }
+      setState(prev => {
+        // Only persist if consent is given
+        if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+          localStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, path);
+        }
+        
+        return {
+          ...prev,
+          code: content,
+          activeFilePath: path,
+          originalMetrics: calculateComplexity(content),
+          isDiffOpen: false,
+          proposedCode: "",
+          isDirty: false,
+          activeView: 'editor'
+        };
+      });
+    } catch (err) {
+      console.error("[WORKSPACE]: Error reading file", err);
+    }
+  }, []);
+
+  // Initial Load from LocalStorage
+  useEffect(() => {
+    const hasConsented = localStorage.getItem('caramelpepper-cookie-consent') === 'true';
+    if (!hasConsented) return;
+
+    const savedRoot = localStorage.getItem(STORAGE_KEYS.WORKSPACE_ROOT);
+    const savedFile = localStorage.getItem(STORAGE_KEYS.ACTIVE_FILE);
+    const savedPickerDismissed = localStorage.getItem(STORAGE_KEYS.PICKER_DISMISSED) === 'true';
+    const savedSidebar = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true';
+    const savedAnalysis = localStorage.getItem(STORAGE_KEYS.ANALYSIS_COLLAPSED) === 'true';
+    const savedBottom = localStorage.getItem(STORAGE_KEYS.BOTTOM_COLLAPSED) === 'true';
+
+    setState(prev => ({
+      ...prev,
+      workspaceRoot: savedRoot,
+      isPickerDismissed: savedPickerDismissed,
+      isSidebarCollapsed: savedSidebar,
+      isAnalysisPanelCollapsed: savedAnalysis,
+      isBottomPanelCollapsed: savedBottom
+    }));
+
+    if (savedRoot && !savedRoot.startsWith('browser://')) {
+      fetchWorkspaceTree(savedRoot);
+    }
+
+    if (savedFile) {
+      openFile(savedFile);
+    }
+
+    isInitialized.current = true;
+  }, [fetchWorkspaceTree, openFile]);
+
   useEffect(() => {
     if (!auth || !isConfigured) {
       setState(prev => ({ ...prev, loadingAuth: false }));
@@ -108,12 +202,11 @@ function useAppStoreLogic(initialCode: string = "") {
     
     try {
       const currentUser = auth.currentUser;
-      
       if (currentUser?.isAnonymous) {
         try {
           await linkWithPopup(currentUser, githubProvider);
         } catch (linkError: any) {
-          if (linkError.message?.includes('authorizedDomains') || linkError.message?.includes('Symbol.iterator')) {
+          if (linkError.message?.includes('Symbol.iterator')) {
             throw linkError;
           }
           if (linkError.code === 'auth/credential-already-in-use') {
@@ -127,17 +220,13 @@ function useAppStoreLogic(initialCode: string = "") {
       }
     } catch (error: any) {
       console.error("[AUTH]: Authentication failed.", error.message);
-      
-      if (error.message?.includes('authorizedDomains') || error.message?.includes('Symbol.iterator')) {
+      if (error.message?.includes('Symbol.iterator')) {
         const hostname = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
-        alert(`CaramelPepper: Firebase SDK Error.\n\nYour domain "${hostname}" is likely not authorized in your Firebase Console.\n\nTo fix:\n1. Open Firebase Console > Auth > Settings > Authorized Domains.\n2. Add "${hostname}" to the list.\n3. Verify NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN in .env is correct.`);
+        alert(`CaramelPepper: Authentication encountered an internal SDK error. This usually means the Firebase Auth configuration hasn't finished loading or your domain "${hostname}" is not authorized in the Firebase console.`);
         return;
       }
-
       if (error.code === 'auth/api-key-not-valid') {
         alert("CaramelPepper: The Firebase API Key in your .env file is invalid.");
-      } else if (error.code === 'auth/auth-domain-config-required') {
-        alert("CaramelPepper: Auth Domain is missing or incorrect. Check NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN.");
       } else if (error.code !== 'auth/popup-closed-by-user') {
         alert(`Authentication error: ${error.message}`);
       }
@@ -153,23 +242,6 @@ function useAppStoreLogic(initialCode: string = "") {
     }
   }, []);
 
-  const fetchWorkspaceTree = useCallback(async (path?: string) => {
-    setState(prev => ({ ...prev, isFetchingTree: true }));
-    try {
-      const url = path ? `/api/workspace/tree?path=${encodeURIComponent(path)}` : '/api/workspace/tree';
-      const response = await fetch(url);
-      if (!response.ok) {
-        setState(prev => ({ ...prev, isFetchingTree: false }));
-        throw new Error("Failed to load workspace tree");
-      }
-      const data = await response.json();
-      setState(prev => ({ ...prev, fileTree: data, isFetchingTree: false }));
-    } catch (err) {
-      setState(prev => ({ ...prev, isFetchingTree: false }));
-      throw err;
-    }
-  }, []);
-
   const setWorkspaceRoot = useCallback(async (path: string) => {
     try {
       const response = await fetch('/api/workspace/set_root', {
@@ -179,7 +251,13 @@ function useAppStoreLogic(initialCode: string = "") {
       });
       if (response.ok) {
         await fetchWorkspaceTree(path);
-        setState(prev => ({ ...prev, workspaceRoot: path, isPickerDismissed: true }));
+        setState(prev => {
+          if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+            localStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, path);
+            localStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
+          }
+          return { ...prev, workspaceRoot: path, isPickerDismissed: true };
+        });
         return true;
       }
       return false;
@@ -195,13 +273,20 @@ function useAppStoreLogic(initialCode: string = "") {
       }
       const handle = await (window as any).showDirectoryPicker();
       const tree = await readDirectoryRecursive(handle);
-      setState(prev => ({
-        ...prev,
-        fileTree: tree,
-        workspaceRoot: `browser://${handle.name}`,
-        isPickerDismissed: true,
-        activeView: 'editor'
-      }));
+      setState(prev => {
+        const root = `browser://${handle.name}`;
+        if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+          localStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, root);
+          localStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
+        }
+        return {
+          ...prev,
+          fileTree: tree,
+          workspaceRoot: root,
+          isPickerDismissed: true,
+          activeView: 'editor'
+        };
+      });
       return true;
     } catch (err) {
       return false;
@@ -209,37 +294,18 @@ function useAppStoreLogic(initialCode: string = "") {
   }, []);
 
   const resetWorkspaceRoot = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEYS.WORKSPACE_ROOT);
+      localStorage.removeItem(STORAGE_KEYS.PICKER_DISMISSED);
+    }
     setState(prev => ({ ...prev, workspaceRoot: null, fileTree: [], isPickerDismissed: false, activeView: 'editor' }));
   }, []);
 
   const dismissPicker = useCallback(() => {
-    setState(prev => ({ ...prev, isPickerDismissed: true }));
-  }, []);
-
-  const openFile = useCallback(async (path: string, handle?: any) => {
-    try {
-      let content = "";
-      if (handle && handle.getFile) {
-        const file = await handle.getFile();
-        content = await file.text();
-      } else {
-        const response = await fetch(`/api/workspace/read?path=${encodeURIComponent(path)}`);
-        if (!response.ok) return;
-        content = await response.text();
-      }
-      setState(prev => ({
-        ...prev,
-        code: content,
-        activeFilePath: path,
-        originalMetrics: calculateComplexity(content),
-        isDiffOpen: false,
-        proposedCode: "",
-        isDirty: false,
-        activeView: 'editor'
-      }));
-    } catch (err) {
-      console.error("[WORKSPACE]: Error reading file", err);
+    if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+      localStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
     }
+    setState(prev => ({ ...prev, isPickerDismissed: true }));
   }, []);
 
   const saveFileAs = useCallback(async (newPath: string) => {
@@ -250,11 +316,16 @@ function useAppStoreLogic(initialCode: string = "") {
         body: JSON.stringify({ path: newPath, content: state.code })
       });
       if (response.ok) {
-        setState(prev => ({ 
-          ...prev, 
-          activeFilePath: newPath,
-          isDirty: false 
-        }));
+        setState(prev => {
+          if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, newPath);
+          }
+          return { 
+            ...prev, 
+            activeFilePath: newPath,
+            isDirty: false 
+          };
+        });
         if (state.workspaceRoot) {
           fetchWorkspaceTree(state.workspaceRoot);
         }
@@ -298,6 +369,9 @@ function useAppStoreLogic(initialCode: string = "") {
   }, []);
 
   const closeActiveFile = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
+    }
     setState(prev => ({
       ...prev,
       code: "",
@@ -421,15 +495,33 @@ function useAppStoreLogic(initialCode: string = "") {
   }, []);
 
   const toggleSidebar = useCallback(() => {
-    setState(prev => ({ ...prev, isSidebarCollapsed: !prev.isSidebarCollapsed }));
+    setState(prev => {
+      const next = !prev.isSidebarCollapsed;
+      if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(next));
+      }
+      return { ...prev, isSidebarCollapsed: next };
+    });
   }, []);
 
   const toggleAnalysisPanel = useCallback(() => {
-    setState(prev => ({ ...prev, isAnalysisPanelCollapsed: !prev.isAnalysisPanelCollapsed }));
+    setState(prev => {
+      const next = !prev.isAnalysisPanelCollapsed;
+      if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        localStorage.setItem(STORAGE_KEYS.ANALYSIS_COLLAPSED, String(next));
+      }
+      return { ...prev, isAnalysisPanelCollapsed: next };
+    });
   }, []);
 
   const toggleBottomPanel = useCallback(() => {
-    setState(prev => ({ ...prev, isBottomPanelCollapsed: !prev.isBottomPanelCollapsed }));
+    setState(prev => {
+      const next = !prev.isBottomPanelCollapsed;
+      if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        localStorage.setItem(STORAGE_KEYS.BOTTOM_COLLAPSED, String(next));
+      }
+      return { ...prev, isBottomPanelCollapsed: next };
+    });
   }, []);
 
   const toggleMobileMenu = useCallback(() => {
