@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react"
@@ -11,11 +10,9 @@ import {
   ShieldCheck,
   Code,
   FileOutput,
-  Brain,
+  Flame,
   Layout,
   ChevronRight,
-  ChevronUp,
-  ChevronDown,
   Terminal
 } from "lucide-react"
 import {
@@ -47,12 +44,9 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
     store.resetWorkspaceRoot();
   }
 
-  // Calculate relative path for breadcrumb display
   const relativePath = React.useMemo(() => {
     if (!store.activeFilePath) return null;
     if (!store.workspaceRoot) return store.activeFilePath;
-    
-    // Remove workspace root from path to show relative structure
     return store.activeFilePath.replace(store.workspaceRoot, '').replace(/^[/\\]/, '');
   }, [store.activeFilePath, store.workspaceRoot]);
 
@@ -62,37 +56,37 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
   }, [store.workspaceRoot]);
 
   return (
-    <div className="h-8 w-full bg-[#333333] border-b border-[#3c3c3c] flex items-center px-2 z-50">
+    <div className="h-9 w-full bg-[#0a0a0a] border-b border-border flex items-center px-2 z-50">
       <div className="flex items-center gap-2 mr-4 px-2">
-        <Brain className="w-4 h-4 text-[#007acc]" />
-        <span className="text-[11px] font-bold text-[#ffffff] uppercase tracking-tight">CaramelPepper</span>
+        <Flame className="w-4 h-4 text-primary" />
+        <span className="text-[11px] font-bold text-foreground uppercase tracking-tight font-headline">CaramelPepper</span>
       </div>
 
       <Menubar className="bg-transparent border-none h-full shadow-none">
         <MenubarMenu>
-          <MenubarTrigger className="text-[11px] h-7 px-3 text-[#cccccc] data-[state=open]:bg-[#2d2d2d] data-[state=open]:text-[#ffffff] focus:bg-[#2d2d2d] focus:text-[#ffffff] cursor-default">
+          <MenubarTrigger className="text-[11px] h-7 px-3 text-muted-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground focus:bg-muted focus:text-foreground cursor-default transition-colors">
             File
           </MenubarTrigger>
-          <MenubarContent className="bg-[#252526] border-[#3c3c3c] text-[#cccccc]">
-            <MenubarItem onClick={handleOpenLocalFile} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
+          <MenubarContent className="bg-popover border-border text-foreground">
+            <MenubarItem onClick={handleOpenLocalFile} className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground">
               <File className="w-3.5 h-3.5" />
               Open Browser File...
               <MenubarShortcut>Ctrl+O</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={onNewFile} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
+            <MenubarItem onClick={onNewFile} className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground">
               <FileOutput className="w-3.5 h-3.5" />
               New Scratchpad...
             </MenubarItem>
-            <MenubarItem onClick={handleOpenFolder} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
+            <MenubarItem onClick={handleOpenFolder} className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground">
               <FolderOpen className="w-3.5 h-3.5" />
               Open Workspace Folder...
               <MenubarShortcut>Ctrl+K Ctrl+O</MenubarShortcut>
             </MenubarItem>
-            <MenubarSeparator className="bg-[#3c3c3c]" />
+            <MenubarSeparator className="bg-border" />
             <MenubarItem 
               onClick={store.saveActiveFile} 
               disabled={!store.activeFilePath}
-              className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]"
+              className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground"
             >
               <Save className="w-3.5 h-3.5" />
               Save
@@ -103,7 +97,7 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
                 const newName = prompt("Enter new file path:", store.activeFilePath || "");
                 if (newName) store.saveFileAs(newName);
               }} 
-              className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]"
+              className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground"
             >
               <FilePlus className="w-3.5 h-3.5" />
               Save As...
@@ -113,25 +107,25 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
         </MenubarMenu>
 
         <MenubarMenu>
-          <MenubarTrigger className="text-[11px] h-7 px-3 text-[#cccccc] data-[state=open]:bg-[#2d2d2d] data-[state=open]:text-[#ffffff] focus:bg-[#2d2d2d] focus:text-[#ffffff] cursor-default">
+          <MenubarTrigger className="text-[11px] h-7 px-3 text-muted-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground focus:bg-muted focus:text-foreground cursor-default transition-colors">
             Selection
           </MenubarTrigger>
-          <MenubarContent className="bg-[#252526] border-[#3c3c3c] text-[#cccccc]">
-            <MenubarItem className="text-xs focus:bg-[#007acc] focus:text-[#ffffff]">Select All</MenubarItem>
-            <MenubarItem className="text-xs focus:bg-[#007acc] focus:text-[#ffffff]">Expand Selection</MenubarItem>
+          <MenubarContent className="bg-popover border-border text-foreground">
+            <MenubarItem className="text-xs focus:bg-primary focus:text-primary-foreground">Select All</MenubarItem>
+            <MenubarItem className="text-xs focus:bg-primary focus:text-primary-foreground">Expand Selection</MenubarItem>
           </MenubarContent>
         </MenubarMenu>
 
         <MenubarMenu>
-          <MenubarTrigger className="text-[11px] h-7 px-3 text-[#cccccc] data-[state=open]:bg-[#2d2d2d] data-[state=open]:text-[#ffffff] focus:bg-[#2d2d2d] focus:text-[#ffffff] cursor-default">
+          <MenubarTrigger className="text-[11px] h-7 px-3 text-muted-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground focus:bg-muted focus:text-foreground cursor-default transition-colors">
             Help
           </MenubarTrigger>
-          <MenubarContent className="bg-[#252526] border-[#3c3c3c] text-[#cccccc]">
-            <MenubarItem onClick={() => store.setActiveView('shortcuts')} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
+          <MenubarContent className="bg-popover border-border text-foreground">
+            <MenubarItem onClick={() => store.setActiveView('shortcuts')} className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground">
               <Keyboard className="w-3.5 h-3.5" />
               Keyboard Shortcuts
             </MenubarItem>
-            <MenubarItem onClick={() => store.setActiveView('api_reference')} className="flex items-center gap-2 text-xs focus:bg-[#007acc] focus:text-[#ffffff]">
+            <MenubarItem onClick={() => store.setActiveView('api_reference')} className="flex items-center gap-2 text-xs focus:bg-primary focus:text-primary-foreground">
               <Code className="w-3.5 h-3.5" />
               API Reference
             </MenubarItem>
@@ -142,29 +136,28 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
       <div className="ml-auto flex items-center gap-3 pr-4">
         {store.isDirty && (
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#007acc] animate-pulse" />
-            <span className="text-[9px] font-bold text-[#007acc] uppercase">Unsaved</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[9px] font-bold text-primary uppercase">Unsaved</span>
           </div>
         )}
         
-        {/* Breadcrumb Display */}
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1e1e1e] border border-[#3c3c3c] max-w-[240px] overflow-hidden">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-background border border-border max-w-[240px] overflow-hidden">
           {workspaceName ? (
             <>
-              <span className="text-[10px] font-bold text-[#007acc] uppercase tracking-tighter shrink-0">{workspaceName}</span>
-              <ChevronRight className="w-2.5 h-2.5 text-[#858585] shrink-0" />
-              <span className="text-[10px] text-[#cccccc] font-mono truncate">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-tighter shrink-0">{workspaceName}</span>
+              <ChevronRight className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+              <span className="text-[10px] text-foreground font-mono truncate">
                 {relativePath || "IDE_ROOT"}
               </span>
             </>
           ) : (
-            <span className="text-[10px] text-[#858585] font-mono truncate italic">
+            <span className="text-[10px] text-muted-foreground font-mono truncate italic">
               {store.activeFilePath || "IDLE_SCRATCHPAD"}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 ml-2 border-l border-[#3c3c3c] pl-3">
+        <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -174,13 +167,13 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
                   onClick={store.toggleBottomPanel}
                   className={cn(
                     "h-7 w-7 transition-colors",
-                    store.isBottomPanelCollapsed ? "text-[#858585] hover:text-[#cccccc]" : "text-[#007acc] hover:bg-[#007acc]/10"
+                    store.isBottomPanelCollapsed ? "text-muted-foreground hover:text-foreground" : "text-primary hover:bg-primary/10"
                   )}
                 >
                   <Terminal className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+              <TooltipContent side="bottom" className="bg-popover border-border text-[10px]">
                 {store.isBottomPanelCollapsed ? "Open pepper-shell" : "Minimize pepper-shell"}
               </TooltipContent>
             </Tooltip>
@@ -195,13 +188,13 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
                   onClick={store.toggleAnalysisPanel}
                   className={cn(
                     "h-7 w-7 transition-colors",
-                    store.isAnalysisPanelCollapsed ? "text-[#858585] hover:text-[#cccccc]" : "text-[#007acc] hover:bg-[#007acc]/10"
+                    store.isAnalysisPanelCollapsed ? "text-muted-foreground hover:text-foreground" : "text-primary hover:bg-primary/10"
                   )}
                 >
                   <Layout className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-[#252526] border-[#3c3c3c] text-[10px]">
+              <TooltipContent side="bottom" className="bg-popover border-border text-[10px]">
                 {store.isAnalysisPanelCollapsed ? "Open Analysis Panel" : "Close Analysis Panel"}
               </TooltipContent>
             </Tooltip>

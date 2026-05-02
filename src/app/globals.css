@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 80%;
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 80%;
-    --popover: 0 0% 15%;
-    --popover-foreground: 0 0% 80%;
-    --primary: 204 100% 40%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 90%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 277 85% 49%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 18%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 20%;
+    --muted: 0 0% 15%;
     --muted-foreground: 0 0% 60%;
-    --accent: 204 100% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 198 93% 64%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 24%;
-    --input: 0 0% 24%;
-    --ring: 204 100% 40%;
-    --radius: 0.25rem;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 277 85% 49%;
+    --radius: 0.375rem;
   }
 }
 
@@ -32,7 +32,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#1e1e1e] text-[#cccccc];
+    @apply bg-background text-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
   }
 }
 
@@ -42,14 +45,18 @@
 }
 
 .scroll-thin::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 .scroll-thin::-webkit-scrollbar-thumb {
-  @apply bg-[#3c3c3c] rounded-none;
+  @apply bg-[#2a2a2a] rounded-full;
 }
 
 .scroll-thin::-webkit-scrollbar-track {
   @apply bg-transparent;
+}
+
+.font-headline {
+  font-family: 'Space Grotesk', sans-serif;
 }

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react"
@@ -17,7 +16,7 @@ import {
   LogOut,
   Github,
   UserCircle,
-  Brain,
+  Flame,
   ChevronLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -52,11 +51,11 @@ const ActivityIcon = ({ icon: Icon, label, active, onClick }: ActivityIconProps)
               : "text-[#858585] hover:text-[#cccccc]"
           )}
         >
-          {active && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#ffffff]" />}
-          <Icon className="w-6 h-6" />
+          {active && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />}
+          <Icon className="w-5 h-5" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="right" className="bg-[#252526] border-[#3c3c3c] text-xs">
+      <TooltipContent side="right" className="bg-[#1a1a1a] border-[#2a2a2a] text-xs">
         {label}
       </TooltipContent>
     </Tooltip>
@@ -105,11 +104,11 @@ export function Sidebar({
 
   return (
     <div className={cn(
-      "h-full flex overflow-hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 bg-[#252526]",
+      "h-full flex overflow-hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 bg-card",
       store.isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       {/* Activity Bar */}
-      <div className="w-12 bg-[#333333] flex flex-col items-center py-2 shrink-0 border-r border-[#1e1e1e]">
+      <div className="w-12 bg-[#0a0a0a] flex flex-col items-center py-2 shrink-0 border-r border-border">
         <ActivityIcon 
           icon={LayoutGrid} 
           label="Dashboard" 
@@ -152,27 +151,27 @@ export function Sidebar({
             <PopoverTrigger asChild>
               <button className="w-full aspect-square flex items-center justify-center text-[#858585] hover:text-[#cccccc]">
                 {store.user && !isGuest ? (
-                  <Avatar className="w-7 h-7 border border-[#3c3c3c]">
+                  <Avatar className="w-7 h-7 border border-border">
                     <AvatarImage src={store.user.photoURL || undefined} />
                     <AvatarFallback className="bg-[#1e1e1e] text-[10px] text-[#ffffff]">
                       {store.user.displayName?.[0] || store.user.email?.[0] || "?"}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  <UserCircle className={cn("w-6 h-6", isGuest && "text-amber-500/70")} />
+                  <UserCircle className={cn("w-6 h-6", isGuest && "text-accent")} />
                 )}
               </button>
             </PopoverTrigger>
-            <PopoverContent side="right" align="end" className="w-64 bg-[#252526] border-[#3c3c3c] p-2 text-[#cccccc]">
+            <PopoverContent side="right" align="end" className="w-64 bg-popover border-border p-2 text-foreground">
               {store.user && !isGuest ? (
                 <div className="space-y-2">
-                  <div className="px-2 py-1.5 border-b border-[#3c3c3c]">
-                    <p className="text-xs font-bold text-[#ffffff] truncate">{store.user.displayName || "User"}</p>
-                    <p className="text-[10px] text-[#858585] truncate">{store.user.email}</p>
+                  <div className="px-2 py-1.5 border-b border-border">
+                    <p className="text-xs font-bold text-foreground truncate">{store.user.displayName || "User"}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{store.user.email}</p>
                   </div>
                   <button 
                     onClick={() => { store.logout(); store.closeMobileMenu(); }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-[#3c3c3c] rounded-sm transition-colors text-red-400"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-muted rounded-sm transition-colors text-destructive"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Sign Out
@@ -181,10 +180,10 @@ export function Sidebar({
               ) : (
                 <div className="p-3 space-y-3">
                   <div className="space-y-1">
-                    <p className="text-[12px] font-bold text-[#ffffff]">
+                    <p className="text-[12px] font-bold text-foreground">
                       {isGuest ? "Guest Session Active" : "Sign In Required"}
                     </p>
-                    <p className="text-[11px] text-[#858585] leading-relaxed">
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
                       {isGuest 
                         ? "You are using a temporary session. Your API keys and history will be lost if you clear your browser data."
                         : "Sign in to isolate your data and sync settings across devices."}
@@ -192,7 +191,7 @@ export function Sidebar({
                   </div>
                   <Button 
                     onClick={() => { store.login(); store.closeMobileMenu(); }}
-                    className="w-full h-9 bg-[#ffffff] text-[#000000] hover:bg-[#cccccc] text-xs font-bold gap-2"
+                    className="w-full h-9 bg-foreground text-background hover:bg-muted-foreground text-xs font-bold gap-2"
                   >
                     <Github className="w-3.5 h-3.5" />
                     {isGuest ? "Upgrade with GitHub" : "Sign in with GitHub"}
@@ -207,32 +206,32 @@ export function Sidebar({
       {/* Sidebar Panel */}
       {!store.isSidebarCollapsed && (
         <aside className={cn(
-          "flex-1 flex flex-col bg-[#252526] transition-all duration-200 overflow-hidden",
+          "flex-1 flex flex-col bg-card transition-all duration-200 overflow-hidden",
           activeView === 'dashboard' || activeView === 'vault' || activeView === 'history' ? "w-0 opacity-0" : "w-[240px] opacity-100"
         )}>
-          <div className="p-3 border-b border-[#3c3c3c] flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#858585] uppercase tracking-wider">
+          <div className="p-3 border-b border-border flex items-center justify-between">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline">
               {activeView === 'editor' ? 'Explorer' : 'Detective'}
             </span>
             <div className="flex items-center gap-1">
               {activeView === 'editor' && workspaceRoot && (
                 <button 
                   onClick={onRefreshTree}
-                  className="text-[#858585] hover:text-[#ffffff] transition-colors p-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
                 >
                   <RefreshCw className={cn("w-3.5 h-3.5", isFetchingTree && "animate-spin")} />
                 </button>
               )}
               <button 
                 onClick={store.toggleSidebar}
-                className="text-[#858585] hover:text-[#ffffff] transition-colors p-1"
+                className="text-muted-foreground hover:text-foreground transition-colors p-1"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto scroll-thin">
             {activeView === 'editor' && (
               <div className="py-2">
                 {workspaceRoot ? (
@@ -243,14 +242,14 @@ export function Sidebar({
                   />
                 ) : (
                   <div className="py-8 px-4 text-center space-y-4">
-                    <p className="text-[11px] text-[#858585] leading-relaxed">
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
                       No workspace opened. You are in Single File Mode.
                     </p>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={onOpenWorkspace}
-                      className="h-7 text-[10px] border-[#3c3c3c] text-[#cccccc] hover:bg-[#2a2d2e] w-full flex items-center justify-center gap-2 px-1 overflow-hidden"
+                      className="h-7 text-[10px] border-border text-foreground hover:bg-muted w-full flex items-center justify-center gap-2 px-1 overflow-hidden"
                     >
                       <FolderOpen className="w-3 h-3 shrink-0" />
                       <span className="truncate">Open Workspace</span>
@@ -262,18 +261,18 @@ export function Sidebar({
 
             {activeView === 'style_detective' && (
               <div className="p-4 text-center space-y-4">
-                <Fingerprint className="w-8 h-8 text-[#007acc] mx-auto opacity-50" />
-                <p className="text-[11px] text-[#858585]">Configure your repository-wide style preferences to guide the refactoring engine.</p>
+                <Fingerprint className="w-8 h-8 text-primary mx-auto opacity-50" />
+                <p className="text-[11px] text-muted-foreground">Configure your repository-wide style preferences to guide the refactoring engine.</p>
               </div>
             )}
           </div>
 
-          <div className="p-3 border-t border-[#3c3c3c]">
-            <div className="flex items-center gap-2 px-2 py-1.5 bg-[#1e1e1e] rounded-sm border border-[#3c3c3c]">
-              <Brain className="w-3.5 h-3.5 text-[#007acc]" />
+          <div className="p-3 border-t border-border">
+            <div className="flex items-center gap-2 px-2 py-1.5 bg-background rounded-sm border border-border">
+              <Flame className="w-3.5 h-3.5 text-primary" />
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-[#ffffff] leading-none uppercase">CaramelPepper</span>
-                <span className="text-[8px] text-[#858585] font-mono">Engine Active</span>
+                <span className="text-[9px] font-bold text-foreground leading-none uppercase font-headline">CaramelPepper</span>
+                <span className="text-[8px] text-muted-foreground font-mono">Engine Active</span>
               </div>
             </div>
           </div>
