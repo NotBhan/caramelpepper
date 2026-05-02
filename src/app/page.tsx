@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react"
@@ -64,13 +63,24 @@ export default function Dashboard() {
           language: getLanguageFromPath(store.activeFilePath),
           provider: store.inferenceProvider,
           style: detectedStyle,
-          isAnonymous: store.user?.isAnonymous || false
+          isAnonymous: store.isGuest
         })
       });
 
+      const contentType = refactorResponse.headers.get("content-type");
       if (!refactorResponse.ok) {
-        const errData = await refactorResponse.json();
-        throw new Error(errData.error || 'AI Refactoring failed');
+        let errorMessage = "Optimization engine failed.";
+        if (contentType && contentType.includes("application/json")) {
+          const errData = await refactorResponse.json();
+          errorMessage = errData.error || errorMessage;
+        } else {
+          errorMessage = await refactorResponse.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received an invalid response from the refactoring server.");
       }
 
       const refactorResult = await refactorResponse.json();
@@ -87,7 +97,7 @@ export default function Dashboard() {
     } catch (err: any) {
       toast({
         title: "Optimization Failed",
-        description: err.message || "Refactoring engine failed.",
+        description: err.message || "The refactoring engine could not be reached.",
         variant: "destructive",
       })
     } finally {
@@ -96,7 +106,7 @@ export default function Dashboard() {
   }
 
   // Determine if the workspace picker should be shown automatically
-  const isGitHubAuthenticated = store.user && !store.user.isAnonymous;
+  const isGitHubAuthenticated = store.user && !store.isGuest;
   const isWorkspaceActive = store.workspaceRoot !== null;
   const showPicker = hasConsented === true && 
                      !store.loadingAuth && 
