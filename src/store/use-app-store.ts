@@ -61,7 +61,7 @@ function useAppStoreLogic(initialCode: string = "") {
     proposedCode: "",
     originalMetrics: initialCode ? calculateComplexity(initialCode) : null,
     proposedMetrics: null,
-    inferenceProvider: 'ollama',
+    inferenceProvider: 'gemini',
     keyStatus: {},
     ollamaConfig: { url: "http://127.0.0.1:11434", model: "qwen2.5-coder", useDefaultUrl: true },
     llamacppConfig: { url: "http://127.0.0.1:8080" },
