@@ -11,7 +11,7 @@ function createWindow() {
     width: 1280,
     height: 800,
     title: 'CaramelPepper',
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#000000',
     show: false, // Do not show the window until it is ready to be painted
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -27,8 +27,11 @@ function createWindow() {
     // In dev mode, we load the Next.js dev server on port 9002
     win.loadURL('http://localhost:9002');
   } else {
-    // [PRODUCTION PLACEHOLDER]: In a full build, this would load from a custom server
-    win.loadURL('http://localhost:9002'); 
+    // [PRODUCTION PLACEHOLDER]: Load the production build
+    win.loadFile(path.join(__dirname, '../out/index.html')).catch(() => {
+      // Fallback for custom server setups
+      win.loadURL('http://localhost:9002');
+    });
   }
 
   // Optimize perceived boot time by only showing the window when content is ready

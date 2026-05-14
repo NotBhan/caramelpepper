@@ -12,9 +12,9 @@
     --popover-foreground: 0 0% 90%;
     --primary: 277 85% 49%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
+    --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 15%;
+    --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
     --accent: 198 93% 64%;
     --accent-foreground: 0 0% 0%;
@@ -32,7 +32,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
@@ -45,8 +45,8 @@
 }
 
 .scroll-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .scroll-thin::-webkit-scrollbar-thumb {
@@ -59,4 +59,11 @@
 
 .font-headline {
   font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Monaco Editor Background Override */
+.monaco-editor, 
+.monaco-editor .margin, 
+.monaco-editor-background {
+  background-color: #000000 !important;
 }

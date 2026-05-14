@@ -45,14 +45,14 @@ const ActivityIcon = ({ icon: Icon, label, active, onClick }: ActivityIconProps)
         <button
           onClick={onClick}
           className={cn(
-            "w-full aspect-square flex items-center justify-center transition-all relative group",
+            "w-full aspect-square flex items-center justify-center transition-all relative group h-12",
             active 
-              ? "text-foreground" 
-              : "text-muted-foreground hover:text-foreground"
+              ? "text-foreground bg-primary/10" 
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
           )}
         >
           {active && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />}
-          <Icon className="w-5 h-5" />
+          <Icon className={cn("w-5 h-5", active && "text-primary")} />
         </button>
       </TooltipTrigger>
       <TooltipContent side="right" className="bg-popover border-border text-xs">
@@ -108,7 +108,7 @@ export function Sidebar({
       store.isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       {/* Activity Bar */}
-      <div className="w-12 bg-secondary flex flex-col items-center py-2 shrink-0 border-r border-border">
+      <div className="w-12 bg-secondary flex flex-col items-center py-0 shrink-0 border-r border-border">
         <ActivityIcon 
           icon={LayoutGrid} 
           label="Dashboard" 
@@ -140,7 +140,7 @@ export function Sidebar({
           onClick={() => handleActivityIconClick('history')} 
         />
         
-        <div className="mt-auto w-full flex flex-col items-center gap-2">
+        <div className="mt-auto w-full flex flex-col items-center py-2">
           <ActivityIcon 
             icon={Settings} 
             label="Settings" 
@@ -149,7 +149,7 @@ export function Sidebar({
           
           <Popover>
             <PopoverTrigger asChild>
-              <button className="w-full aspect-square flex items-center justify-center text-muted-foreground hover:text-foreground">
+              <button className="w-full aspect-square flex items-center justify-center text-muted-foreground hover:text-foreground h-12">
                 {store.user && !isGuest ? (
                   <Avatar className="w-7 h-7 border border-border">
                     <AvatarImage src={store.user.photoURL || undefined} />

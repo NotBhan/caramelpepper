@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import Editor from "@monaco-editor/react"
+import Editor, { loader } from "@monaco-editor/react"
 import { Copy, Trash2, FileJson, Layers, X, Code2, Terminal, FolderOpen, FilePlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -39,6 +39,17 @@ export function CodeEditor({
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+    
+    // Explicitly set background for the editor instance
+    monaco.editor.defineTheme('caramel-pepper-theme', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [],
+      colors: {
+        'editor.background': '#000000',
+      }
+    });
+    monaco.editor.setTheme('caramel-pepper-theme');
   };
 
   React.useEffect(() => {
