@@ -49,8 +49,8 @@ Follow these steps to get your environment running:
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/yourusername/CaramelPepper.git
-cd CaramelPepper
+git clone https://github.com/NotBhan/caramelpepper
+cd caramelpepper
 npm install
 ```
 
