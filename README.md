@@ -1,3 +1,4 @@
+
 # CaramelPepper 🌶️
 
 A privacy-first, AI-powered local IDE and code refactoring engine. CaramelPepper bridges the gap between powerful cloud-based LLMs and secure, offline local models, giving you a lightning-fast, highly contextual coding assistant that lives directly on your machine or in the cloud.
@@ -19,6 +20,7 @@ A privacy-first, AI-powered local IDE and code refactoring engine. CaramelPepper
 * **State Management:** Custom Global Context Store
 * **Editor:** @monaco-editor/react
 * **Authentication & Database:** Firebase Authentication & Cloud Firestore
+* **Desktop Wrapper:** Electron
 
 ## 🚀 Getting Started
 
@@ -42,12 +44,34 @@ A privacy-first, AI-powered local IDE and code refactoring engine. CaramelPepper
    ```
 
 3. Set up environment variables:
-   Create a `.env.local` file with your Firebase configuration (see `.env` for template).
+   Create a `.env.local` file with your Firebase configuration.
 
-4. Start the development server:
+4. Start the development server (Web only):
    ```bash
    npm run dev
    ```
+
+### Running as a Desktop App (Electron)
+
+To run CaramelPepper in desktop mode during development:
+```bash
+npm run dev:electron
+```
+
+### Compiling & Packaging (Production)
+
+To build and package CaramelPepper as a standalone executable for your operating system:
+
+1. **Build the Next.js frontend:**
+   ```bash
+   npm run build
+   ```
+
+2. **Compile the Desktop App:**
+   ```bash
+   npm run build:electron
+   ```
+   *This command uses `electron-builder` to package the application. The resulting installers will be located in the `dist` folder.*
 
 ## 📂 Workspace Modes
 
