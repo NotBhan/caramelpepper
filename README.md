@@ -21,66 +21,89 @@ A privacy-first, AI-powered local IDE and code refactoring engine. CaramelPepper
 * **Editor:** @monaco-editor/react
 * **Authentication & Database:** Firebase Authentication & Cloud Firestore
 * **Desktop Wrapper:** Electron
+* **AI Orchestration:** Genkit
 
-## 🚀 Getting Started
+## 📋 Requirements
 
-### Prerequisites
+Before installing, ensure you have the following tools and accounts ready:
 
-* Node.js (v18.17 or newer)
-* A Firebase Project (for Authentication and Firestore)
-* (Optional) Ollama or a llama.cpp server for 100% offline AI execution.
+### 1. Software & Environment
+* **Node.js:** v18.17.0 or newer (v20+ recommended).
+* **Package Manager:** npm (comes with Node.js) or Yarn.
+* **OS:** Windows 10/11, macOS (Intel or Apple Silicon), or Linux.
+* **C++ Compiler (Optional):** Required only if you intend to rebuild the native high-performance backend (GCC 11+, Clang 13+, or MSVC 2022+).
 
-### Installation
+### 2. Cloud Configuration
+* **Firebase Project:** Create a project at [Firebase Console](https://console.firebase.google.com/).
+    * Enable **Authentication** (GitHub Provider).
+    * Enable **Cloud Firestore**.
+* **GitHub OAuth:** Register an OAuth App in your GitHub Developer Settings to connect with Firebase.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/CaramelPepper.git
-   cd CaramelPepper
-   ```
+### 3. Local AI (Optional for Offline Mode)
+* **Ollama:** Install from [ollama.com](https://ollama.com/).
+* **Models:** Recommended models include `qwen2.5-coder` or `llama3`.
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 🚀 Installation & Setup
 
-3. Set up environment variables:
-   Create a `.env.local` file with your Firebase configuration.
+Follow these steps to get your environment running:
 
-4. Start the development server (Web only):
-   ```bash
-   npm run dev
-   ```
+### 1. Clone & Install
+```bash
+git clone https://github.com/yourusername/CaramelPepper.git
+cd CaramelPepper
+npm install
+```
 
-### Running as a Desktop App (Electron)
+### 2. Environment Variables
+Create a `.env` file in the root directory and populate it with your Firebase configuration and API keys:
 
-To run CaramelPepper in desktop mode during development:
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Google GenAI (Genkit)
+GOOGLE_GENAI_API_KEY=your_google_ai_key
+```
+
+### 3. Start Development Server
+```bash
+# Run the Next.js web application on http://localhost:9002
+npm run dev
+```
+
+### 4. Running as a Desktop App (Electron)
+To run CaramelPepper in desktop mode with native window features:
 ```bash
 npm run dev:electron
 ```
-
-### Compiling & Packaging (Production)
-
-To build and package CaramelPepper as a standalone executable for your operating system:
-
-1. **Build the Next.js frontend:**
-   ```bash
-   npm run build
-   ```
-
-2. **Compile the Desktop App:**
-   ```bash
-   npm run build:electron
-   ```
-   *This command uses `electron-builder` to package the application. The resulting installers will be located in the `dist` folder.*
 
 ## 📂 Workspace Modes
 
 * **Workspace Mode:** Load a full directory structure via local path or the Browser File System Access API.
 * **Scratchpad Mode:** Use the IDE as a lightweight, single-file refactoring tool. Select your language and start coding immediately.
 
+## 🏗️ Production Build
+
+### Build the Web App
+```bash
+npm run build
+```
+
+### Package Desktop Executable
+```bash
+# Compiles the Next.js app and bundles it into a standalone installer
+npm run build:electron
+```
+*The resulting installers will be located in the `dist/` folder.*
+
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome!
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/CaramelPepper/issues).
 
 ## 📝 License
 
