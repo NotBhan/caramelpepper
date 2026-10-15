@@ -17,7 +17,8 @@ import {
   Github,
   UserCircle,
   Flame,
-  ChevronLeft
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FileExplorer } from "./FileExplorer"
@@ -45,17 +46,17 @@ const ActivityIcon = ({ icon: Icon, label, active, onClick }: ActivityIconProps)
         <button
           onClick={onClick}
           className={cn(
-            "w-full aspect-square flex items-center justify-center transition-all relative group h-12",
+            "w-full aspect-square flex items-center justify-center transition-all relative group h-10",
             active 
-              ? "text-foreground bg-primary/10" 
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+              ? "text-[#FAFAFA] bg-[#141416]" 
+              : "text-zinc-500 hover:text-zinc-200 hover:bg-[#141416]/50"
           )}
         >
-          {active && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />}
-          <Icon className={cn("w-5 h-5", active && "text-primary")} />
+          {active && <div className="absolute left-0 top-1 bottom-1 w-[2px] bg-[#E11D48]" />}
+          <Icon className="w-4 h-4" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="right" className="bg-popover border-border text-xs">
+      <TooltipContent side="right" className="bg-[#141416] border-[#222226] text-xs text-[#FAFAFA]">
         {label}
       </TooltipContent>
     </Tooltip>
@@ -94,8 +95,11 @@ export function Sidebar({
   const isGuest = store.user?.isAnonymous;
 
   const handleActivityIconClick = (view: AppView) => {
-    if (store.activeView === view) {
-      store.toggleSidebar();
+    if (store.isSidebarCollapsed) {
+      store.setSidebarCollapsed(false);
+      setActiveView(view);
+    } else if (store.activeView === view) {
+      store.setSidebarCollapsed(true);
     } else {
       setActiveView(view);
     }
@@ -104,11 +108,29 @@ export function Sidebar({
 
   return (
     <div className={cn(
-      "h-full flex overflow-hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 bg-card",
+      "h-full flex overflow-hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 bg-[#09090B]",
       store.isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       {/* Activity Bar */}
-      <div className="w-12 bg-secondary flex flex-col items-center py-0 shrink-0 border-r border-border">
+      <div className="w-12 bg-[#09090B] flex flex-col items-center py-0 shrink-0 border-r border-[#27272A]">
+        {store.isSidebarCollapsed && (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => store.setSidebarCollapsed(false)}
+                  className="w-full h-10 flex items-center justify-center text-zinc-400 hover:text-[#FAFAFA] hover:bg-[#141416] transition-colors border-b border-[#222226] group"
+                  title="Expand Sidebar (Ctrl+B)"
+                >
+                  <ChevronRight className="w-4 h-4 text-[#E11D48] group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-[#141416] border-[#222226] text-xs text-[#FAFAFA]">
+                Expand Sidebar (Ctrl+B)
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <ActivityIcon 
           icon={LayoutGrid} 
           label="Dashboard" 
@@ -206,32 +228,32 @@ export function Sidebar({
       {/* Sidebar Panel */}
       {!store.isSidebarCollapsed && (
         <aside className={cn(
-          "flex-1 flex flex-col bg-card transition-all duration-200 overflow-hidden",
+          "flex-1 flex flex-col bg-[#09090B] border-r border-[#27272A] transition-all duration-200 overflow-hidden",
           activeView === 'dashboard' || activeView === 'vault' || activeView === 'history' || activeView === 'shortcuts' || activeView === 'api_reference' ? "w-0 opacity-0" : "w-[240px] opacity-100"
         )}>
-          <div className="p-3 border-b border-border flex items-center justify-between bg-card">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-headline">
+          <div className="p-3 border-b border-[#27272A] flex items-center justify-between bg-[#09090B]">
+            <span className="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider font-headline">
               {activeView === 'editor' ? 'Explorer' : 'Detective'}
             </span>
             <div className="flex items-center gap-1">
               {activeView === 'editor' && workspaceRoot && (
                 <button 
                   onClick={onRefreshTree}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  className="text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors p-1"
                 >
                   <RefreshCw className={cn("w-3.5 h-3.5", isFetchingTree && "animate-spin")} />
                 </button>
               )}
               <button 
                 onClick={store.toggleSidebar}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                className="text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors p-1"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto scroll-thin bg-card">
+          <div className="flex-1 overflow-y-auto scroll-thin bg-[#09090B]">
             {activeView === 'editor' && (
               <div className="py-2">
                 {workspaceRoot ? (
@@ -248,11 +270,11 @@ export function Sidebar({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={onOpenWorkspace}
-                      className="h-7 text-[10px] border-border text-foreground hover:bg-muted w-full flex items-center justify-center gap-2 px-1 overflow-hidden"
+                      onClick={() => store.openBrowserWorkspace()}
+                      className="h-7 text-[10px] border-[#27272A] text-zinc-300 hover:text-white hover:bg-[#18181B] w-full flex items-center justify-center gap-2 px-1 overflow-hidden"
                     >
-                      <FolderOpen className="w-3 h-3 shrink-0" />
-                      <span className="truncate">Open Workspace</span>
+                      <FolderOpen className="w-3 h-3 shrink-0 text-[#E11D48]" />
+                      <span className="truncate">Open Workspace Folder</span>
                     </Button>
                   </div>
                 )}
@@ -267,12 +289,12 @@ export function Sidebar({
             )}
           </div>
 
-          <div className="p-3 border-t border-border bg-card">
-            <div className="flex items-center gap-2 px-2 py-1.5 bg-background rounded-sm border border-border">
-              <Flame className="w-3.5 h-3.5 text-primary" />
+          <div className="p-2.5 border-t border-[#222226] bg-[#09090B]">
+            <div className="flex items-center gap-2 px-2 py-1.5 bg-[#121215] rounded border border-[#222226]">
+              <Flame className="w-3.5 h-3.5 text-[#E11D48]" />
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-foreground leading-none uppercase font-headline">CaramelPepper</span>
-                <span className="text-[8px] text-muted-foreground font-mono">Engine Active</span>
+                <span className="text-[10px] font-medium text-zinc-300">CaramelPepper</span>
+                <span className="text-[9px] text-zinc-500 font-mono">Local C++20 Core</span>
               </div>
             </div>
           </div>

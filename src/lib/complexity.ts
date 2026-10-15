@@ -7,6 +7,17 @@ export type ComplexityMetrics = {
 };
 
 export function calculateComplexity(code: string): ComplexityMetrics {
+  const trimmed = code.trim();
+  if (!trimmed) {
+    return {
+      cyclomatic: 0,
+      maintainability: 100,
+      cognitive: 0,
+      loc: 0,
+      risk: 'low'
+    };
+  }
+
   const loc = code.split('\n').filter(line => line.trim().length > 0).length;
   
   // Basic heuristic-based cyclomatic complexity counting keywords

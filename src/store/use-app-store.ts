@@ -3,7 +3,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react"
 import { type ComplexityMetrics, calculateComplexity } from "@/lib/complexity"
-import { readDirectoryRecursive } from "@/lib/browser-fs"
+import { readDirectoryRecursive, buildTreeFromFileList } from "@/lib/browser-fs"
+import { safeLocalStorage, safeSessionStorage } from "@/lib/safe-storage"
 import { auth, githubProvider, isConfigured } from "@/lib/firebase"
 import { 
   onAuthStateChanged, 
@@ -110,19 +111,20 @@ function useAppStoreLogic(initialCode: string = "") {
   const openFile = useCallback(async (path: string, handle?: any) => {
     try {
       let content = "";
-      if (handle && handle.getFile) {
+      if (handle && typeof handle.getFile === 'function') {
         const file = await handle.getFile();
         content = await file.text();
+      } else if (handle && typeof handle.text === 'function') {
+        content = await handle.text();
       } else {
         const response = await fetch(`/api/workspace/read?path=${encodeURIComponent(path)}`);
         if (!response.ok) return;
         content = await response.text();
       }
       setState(prev => {
-        // Only persist if consent is given
-        if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-          localStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, path);
-        }
+        // Persist active file to safeSessionStorage so it retains across refreshes in the tab, but releases when the tab is closed
+        safeSessionStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, path);
+        safeLocalStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
         
         return {
           ...prev,
@@ -140,17 +142,36 @@ function useAppStoreLogic(initialCode: string = "") {
     }
   }, []);
 
-  // Initial Load from LocalStorage
+  const openBuffer = useCallback((path: string, content: string) => {
+    safeSessionStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, path);
+    safeLocalStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
+    setState(prev => ({
+      ...prev,
+      code: content,
+      activeFilePath: path,
+      originalMetrics: calculateComplexity(content),
+      isDiffOpen: false,
+      proposedCode: "",
+      isDirty: false,
+      activeView: 'editor'
+    }));
+  }, []);
+
+  // Initial Load from Storage
   useEffect(() => {
-    const hasConsented = localStorage.getItem('caramelpepper-cookie-consent') === 'true';
+    // Purge legacy active file from localStorage
+    safeLocalStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
+
+    const hasConsented = safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true';
     if (!hasConsented) return;
 
-    const savedRoot = localStorage.getItem(STORAGE_KEYS.WORKSPACE_ROOT);
-    const savedFile = localStorage.getItem(STORAGE_KEYS.ACTIVE_FILE);
-    const savedPickerDismissed = localStorage.getItem(STORAGE_KEYS.PICKER_DISMISSED) === 'true';
-    const savedSidebar = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true';
-    const savedAnalysis = localStorage.getItem(STORAGE_KEYS.ANALYSIS_COLLAPSED) === 'true';
-    const savedBottom = localStorage.getItem(STORAGE_KEYS.BOTTOM_COLLAPSED) === 'true';
+    const savedRoot = safeLocalStorage.getItem(STORAGE_KEYS.WORKSPACE_ROOT);
+    // Active file is strictly session-based: retained on refresh, released on tab close
+    const savedFile = safeSessionStorage.getItem(STORAGE_KEYS.ACTIVE_FILE);
+    const savedPickerDismissed = safeLocalStorage.getItem(STORAGE_KEYS.PICKER_DISMISSED) === 'true';
+    const savedSidebar = safeLocalStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true';
+    const savedAnalysis = safeLocalStorage.getItem(STORAGE_KEYS.ANALYSIS_COLLAPSED) === 'true';
+    const savedBottom = safeLocalStorage.getItem(STORAGE_KEYS.BOTTOM_COLLAPSED) === 'true';
 
     setState(prev => ({
       ...prev,
@@ -173,15 +194,16 @@ function useAppStoreLogic(initialCode: string = "") {
   }, [fetchWorkspaceTree, openFile]);
 
   useEffect(() => {
-    if (!auth || !isConfigured) {
+    const currentAuth = auth;
+    if (!currentAuth || !isConfigured) {
       setState(prev => ({ ...prev, loadingAuth: false }));
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(currentAuth, async (user) => {
       if (!user) {
         try {
-          await signInAnonymously(auth);
+          await signInAnonymously(currentAuth);
         } catch (error: any) {
           console.warn("[AUTH]: Anonymous entry failed.", error.message);
           setState(prev => ({ ...prev, loadingAuth: false }));
@@ -252,9 +274,9 @@ function useAppStoreLogic(initialCode: string = "") {
       if (response.ok) {
         await fetchWorkspaceTree(path);
         setState(prev => {
-          if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-            localStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, path);
-            localStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
+          if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+            safeLocalStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, path);
+            safeLocalStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
           }
           return { ...prev, workspaceRoot: path, isPickerDismissed: true };
         });
@@ -266,44 +288,148 @@ function useAppStoreLogic(initialCode: string = "") {
     }
   }, [fetchWorkspaceTree]);
 
-  const openBrowserWorkspace = useCallback(async () => {
-    try {
-      if (typeof window === 'undefined' || !window.showDirectoryPicker) {
-        return false;
-      }
-      const handle = await (window as any).showDirectoryPicker();
-      const tree = await readDirectoryRecursive(handle);
-      setState(prev => {
-        const root = `browser://${handle.name}`;
-        if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-          localStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, root);
-          localStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
-        }
-        return {
+  const openLocalFile = useCallback(async () => {
+    // 1. Try modern File System Access API (Chrome, Edge, Brave, Opera)
+    if (typeof window !== 'undefined' && 'showOpenFilePicker' in window) {
+      try {
+        const [handle] = await (window as any).showOpenFilePicker();
+        const file = await handle.getFile();
+        const content = await file.text();
+        setState(prev => ({
           ...prev,
-          fileTree: tree,
-          workspaceRoot: root,
-          isPickerDismissed: true,
+          code: content,
+          activeFilePath: handle.name,
+          originalMetrics: calculateComplexity(content),
+          isDiffOpen: false,
           activeView: 'editor'
-        };
-      });
-      return true;
-    } catch (err) {
-      return false;
+        }));
+        return true;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return false; // user cancelled dialog
+      }
     }
+
+    // 2. Universal HTML5 fallback for ALL browsers (Firefox, Safari, Mobile, etc.)
+    return new Promise<boolean>((resolve) => {
+      if (typeof window === 'undefined') return resolve(false);
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.cpp,.hpp,.c,.h,.py,.ts,.tsx,.js,.jsx,.json,.txt,.md,.rs,.go,.java';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+
+      input.onchange = async () => {
+        const file = input.files?.[0];
+        document.body.removeChild(input);
+        if (!file) return resolve(false);
+        try {
+          const content = await file.text();
+          setState(prev => ({
+            ...prev,
+            code: content,
+            activeFilePath: file.name,
+            originalMetrics: calculateComplexity(content),
+            isDiffOpen: false,
+            activeView: 'editor'
+          }));
+          resolve(true);
+        } catch {
+          resolve(false);
+        }
+      };
+
+      input.oncancel = () => {
+        document.body.removeChild(input);
+        resolve(false);
+      };
+
+      input.click();
+    });
+  }, []);
+
+  const openBrowserWorkspace = useCallback(async () => {
+    if (typeof window === 'undefined') return false;
+
+    // 1. Try File System Access API if available (Chrome, Edge, Brave, Opera)
+    if ('showDirectoryPicker' in window) {
+      try {
+        const handle = await (window as any).showDirectoryPicker();
+        const tree = await readDirectoryRecursive(handle);
+        setState(prev => {
+          const root = `browser://${handle.name}`;
+          if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+            safeLocalStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, root);
+            safeLocalStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
+          }
+          return {
+            ...prev,
+            fileTree: tree,
+            workspaceRoot: root,
+            isPickerDismissed: true,
+            activeView: 'editor'
+          };
+        });
+        return true;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return false; // user cancelled dialog
+      }
+    }
+
+    // 2. Universal HTML5 directory picker for ALL browsers (Firefox, Safari, Chrome, Edge)
+    return new Promise<boolean>((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      // @ts-ignore
+      input.webkitdirectory = true;
+      // @ts-ignore
+      input.directory = true;
+      input.multiple = true;
+      input.style.display = 'none';
+      document.body.appendChild(input);
+
+      input.onchange = () => {
+        const files = input.files;
+        document.body.removeChild(input);
+        if (!files || files.length === 0) {
+          return resolve(false);
+        }
+
+        const { rootName, tree } = buildTreeFromFileList(files);
+        setState(prev => {
+          const root = `browser://${rootName}`;
+          if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+            safeLocalStorage.setItem(STORAGE_KEYS.WORKSPACE_ROOT, root);
+            safeLocalStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
+          }
+          return {
+            ...prev,
+            fileTree: tree,
+            workspaceRoot: root,
+            isPickerDismissed: true,
+            activeView: 'editor'
+          };
+        });
+        resolve(true);
+      };
+
+      input.oncancel = () => {
+        document.body.removeChild(input);
+        resolve(false);
+      };
+
+      input.click();
+    });
   }, []);
 
   const resetWorkspaceRoot = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEYS.WORKSPACE_ROOT);
-      localStorage.removeItem(STORAGE_KEYS.PICKER_DISMISSED);
-    }
+    safeLocalStorage.removeItem(STORAGE_KEYS.WORKSPACE_ROOT);
+    safeLocalStorage.removeItem(STORAGE_KEYS.PICKER_DISMISSED);
     setState(prev => ({ ...prev, workspaceRoot: null, fileTree: [], isPickerDismissed: false, activeView: 'editor' }));
   }, []);
 
   const dismissPicker = useCallback(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-      localStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
+    if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+      safeLocalStorage.setItem(STORAGE_KEYS.PICKER_DISMISSED, 'true');
     }
     setState(prev => ({ ...prev, isPickerDismissed: true }));
   }, []);
@@ -317,8 +443,8 @@ function useAppStoreLogic(initialCode: string = "") {
       });
       if (response.ok) {
         setState(prev => {
-          if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-            localStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, newPath);
+          if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+            safeSessionStorage.setItem(STORAGE_KEYS.ACTIVE_FILE, newPath);
           }
           return { 
             ...prev, 
@@ -369,9 +495,8 @@ function useAppStoreLogic(initialCode: string = "") {
   }, []);
 
   const closeActiveFile = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
-    }
+    safeSessionStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
+    safeLocalStorage.removeItem(STORAGE_KEYS.ACTIVE_FILE);
     setState(prev => ({
       ...prev,
       code: "",
@@ -485,7 +610,7 @@ function useAppStoreLogic(initialCode: string = "") {
     setState(prev => ({
       ...prev,
       code: newCode,
-      originalMetrics: calculateComplexity(newCode),
+      originalMetrics: prev.activeFilePath ? calculateComplexity(newCode) : null,
       isDirty: true,
     }));
   }, []);
@@ -494,31 +619,58 @@ function useAppStoreLogic(initialCode: string = "") {
     setState(prev => ({ ...prev, activeView: view, isSidebarCollapsed: false }));
   }, []);
 
+  const setSidebarCollapsed = useCallback((collapsed: boolean) => {
+    setState(prev => {
+      if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        safeLocalStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(collapsed));
+      }
+      return { ...prev, isSidebarCollapsed: collapsed };
+    });
+  }, []);
+
   const toggleSidebar = useCallback(() => {
     setState(prev => {
       const next = !prev.isSidebarCollapsed;
-      if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-        localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(next));
+      if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        safeLocalStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(next));
       }
       return { ...prev, isSidebarCollapsed: next };
+    });
+  }, []);
+
+  const setAnalysisPanelCollapsed = useCallback((collapsed: boolean) => {
+    setState(prev => {
+      if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        safeLocalStorage.setItem(STORAGE_KEYS.ANALYSIS_COLLAPSED, String(collapsed));
+      }
+      return { ...prev, isAnalysisPanelCollapsed: collapsed };
     });
   }, []);
 
   const toggleAnalysisPanel = useCallback(() => {
     setState(prev => {
       const next = !prev.isAnalysisPanelCollapsed;
-      if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-        localStorage.setItem(STORAGE_KEYS.ANALYSIS_COLLAPSED, String(next));
+      if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        safeLocalStorage.setItem(STORAGE_KEYS.ANALYSIS_COLLAPSED, String(next));
       }
       return { ...prev, isAnalysisPanelCollapsed: next };
+    });
+  }, []);
+
+  const setBottomPanelCollapsed = useCallback((collapsed: boolean) => {
+    setState(prev => {
+      if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        safeLocalStorage.setItem(STORAGE_KEYS.BOTTOM_COLLAPSED, String(collapsed));
+      }
+      return { ...prev, isBottomPanelCollapsed: collapsed };
     });
   }, []);
 
   const toggleBottomPanel = useCallback(() => {
     setState(prev => {
       const next = !prev.isBottomPanelCollapsed;
-      if (typeof window !== 'undefined' && localStorage.getItem('caramelpepper-cookie-consent') === 'true') {
-        localStorage.setItem(STORAGE_KEYS.BOTTOM_COLLAPSED, String(next));
+      if (safeLocalStorage.getItem('caramelpepper-cookie-consent') === 'true') {
+        safeLocalStorage.setItem(STORAGE_KEYS.BOTTOM_COLLAPSED, String(next));
       }
       return { ...prev, isBottomPanelCollapsed: next };
     });
@@ -547,16 +699,21 @@ function useAppStoreLogic(initialCode: string = "") {
     fetchWorkspaceTree,
     setWorkspaceRoot,
     openBrowserWorkspace,
+    openLocalFile,
     resetWorkspaceRoot,
     dismissPicker,
     openFile,
+    openBuffer,
     newFile,
     closeActiveFile,
     saveActiveFile,
     saveFileAs,
     setActiveView,
+    setSidebarCollapsed,
     toggleSidebar,
+    setAnalysisPanelCollapsed,
     toggleAnalysisPanel,
+    setBottomPanelCollapsed,
     toggleBottomPanel,
     toggleMobileMenu,
     closeMobileMenu,

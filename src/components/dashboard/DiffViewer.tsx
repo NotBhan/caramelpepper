@@ -39,6 +39,34 @@ export function DiffViewer({
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+    
+    monaco.editor.defineTheme('caramel-obsidian', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '71717A', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'F43F5E', fontStyle: 'bold' },
+        { token: 'identifier', foreground: 'FAFAFA' },
+        { token: 'type', foreground: 'F59E0B' },
+        { token: 'function', foreground: 'F59E0B', fontStyle: 'bold' },
+        { token: 'string', foreground: '10B981' },
+        { token: 'number', foreground: 'F59E0B' },
+        { token: 'delimiter', foreground: 'A1A1AA' },
+      ],
+      colors: {
+        'editor.background': '#09090B',
+        'editor.foreground': '#FAFAFA',
+        'editorLineNumber.foreground': '#3F3F46',
+        'editorLineNumber.activeForeground': '#E11D48',
+        'editorCursor.foreground': '#E11D48',
+        'editor.selectionBackground': '#E11D4833',
+        'editor.lineHighlightBackground': '#18181B66',
+        'editorGutter.background': '#09090B',
+        'diffEditor.insertedTextBackground': '#10B98122',
+        'diffEditor.removedTextBackground': '#E11D4822',
+      }
+    });
+    monaco.editor.setTheme('caramel-obsidian');
   };
 
   React.useEffect(() => {
@@ -81,9 +109,9 @@ export function DiffViewer({
     scrollBeyondLastLine: false,
     automaticLayout: true,
     padding: { top: 16 },
-    fontFamily: 'Source Code Pro, monospace',
+    fontFamily: "'JetBrains Mono', 'Source Code Pro', monospace",
     wordWrap: 'on' as const,
-    backgroundColor: '#000000',
+    backgroundColor: '#09090B',
     folding: true,
     lineNumbers: 'on' as const,
     originalEditable: false,
@@ -91,20 +119,19 @@ export function DiffViewer({
   }), []);
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
+    <div className="flex flex-col h-full bg-[#09090B] relative">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#222226] bg-[#121215]">
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-mono text-[10px]">
-            {activeFilePath?.split(/[/\\]/).pop()?.toUpperCase() || "PROPOSED_REFACTOR.TS"}
-          </Badge>
+          <span className="px-2 py-0.5 rounded bg-[#18181B] border border-[#222226] text-zinc-300 font-mono text-[10px]">
+            {activeFilePath?.split(/[/\\]/).pop() || "PROPOSED_REFACTOR.CPP"}
+          </span>
           
           {cyc && (
-            <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-background border border-border">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold">Complexity</span>
-              <span className="text-[11px] font-mono text-foreground/80">
+            <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-[#09090B] border border-[#222226]">
+              <span className="text-[10px] text-zinc-500 uppercase font-mono">Complexity</span>
+              <span className="text-[11px] font-mono text-zinc-300">
                 {originalMetrics?.cyclomatic} → {proposedMetrics?.cyclomatic}
               </span>
-              <cyc.icon className={cn("w-3 h-3", cyc.color)} />
             </div>
           )}
         </div>
@@ -114,29 +141,29 @@ export function DiffViewer({
             variant="ghost" 
             size="sm" 
             onClick={onReject}
-            className="h-8 gap-2 text-foreground/80 hover:text-destructive hover:bg-destructive/10"
+            className="h-7 px-3 text-xs text-zinc-400 hover:text-white hover:bg-[#18181B]"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3.5 h-3.5 mr-1" />
             Discard
           </Button>
           <Button 
             size="sm" 
             onClick={onAccept}
-            className="h-8 gap-2 bg-green-700 hover:bg-green-600 text-white font-bold"
+            className="h-7 px-3 bg-[#FAFAFA] hover:bg-zinc-200 text-[#09090B] font-medium text-xs"
           >
-            <Check className="w-3.5 h-3.5" />
+            <Check className="w-3.5 h-3.5 mr-1" />
             Accept Changes
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 bg-background">
+      <div className="flex-1 min-h-0 bg-[#09090B]">
         <DiffEditor
           height="100%"
           original={original}
           modified={modified}
           language={language}
-          theme="vs-dark"
+          theme="caramel-obsidian"
           options={editorOptions}
           onMount={handleEditorDidMount}
           originalModelPath={modelPaths.original}
@@ -145,11 +172,9 @@ export function DiffViewer({
       </div>
 
       {proposedMetrics && proposedMetrics.risk === 'low' && originalMetrics && originalMetrics.risk !== 'low' && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-sm bg-green-500/10 border border-green-500/20 backdrop-blur-md flex items-center gap-3 shadow-2xl">
-          <AlertCircle className="w-4 h-4 text-green-500" />
-          <span className="text-xs font-bold text-green-400 uppercase tracking-tight">
-            Significant Risk Reduction Detected
-          </span>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded bg-[#121215] border border-[#222226] flex items-center gap-2 text-xs font-mono text-zinc-300 shadow-xl">
+          <Check className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Reduced cyclomatic complexity ({originalMetrics.cyclomatic} → {proposedMetrics.cyclomatic})</span>
         </div>
       )}
     </div>

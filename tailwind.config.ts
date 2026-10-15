@@ -11,10 +11,16 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        headline: ['Syne', 'Space Grotesk', 'sans-serif'],
+        'serif-display': ['Instrument Serif', 'Georgia', 'serif'],
+        code: ['JetBrains Mono', 'Source Code Pro', 'monospace'],
       },
       colors: {
+        obsidian: '#09090B',
+        crimson: '#F43F5E',
+        pepper: '#E11D48',
+        caramel: '#F59E0B',
+        charcoal: '#27272A',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

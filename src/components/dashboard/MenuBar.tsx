@@ -13,7 +13,9 @@ import {
   Flame,
   Layout,
   ChevronRight,
-  Terminal
+  Terminal,
+  Cpu,
+  Cloud
 } from "lucide-react"
 import {
   Menubar,
@@ -25,9 +27,12 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 import { useAppStore } from "@/store/use-app-store"
+import { useModelStore } from "@/store/useModelStore"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+
+import { useWorkspaceTransition } from "@/hooks/useWorkspaceTransition"
 
 interface MenuBarProps {
   onNewFile?: () => void;
@@ -35,6 +40,14 @@ interface MenuBarProps {
 
 export function MenuBar({ onNewFile }: MenuBarProps) {
   const store = useAppStore();
+  const modelStore = useModelStore();
+  const { returnToLanding } = useWorkspaceTransition();
+
+  React.useEffect(() => {
+    if (modelStore.models.length === 0) {
+      modelStore.fetchModels();
+    }
+  }, []);
 
   const handleOpenLocalFile = async () => {
     await store.openLocalFile();
@@ -57,7 +70,11 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
 
   return (
     <div className="h-9 w-full bg-secondary border-b border-border flex items-center px-2 z-50">
-      <div className="flex items-center gap-2 mr-4 px-2">
+      <div 
+        onClick={returnToLanding}
+        className="flex items-center gap-2 mr-4 px-2 cursor-pointer hover:opacity-80 transition-opacity"
+        title="Return to Landing Gateway"
+      >
         <Flame className="w-4 h-4 text-primary" />
         <span className="text-[11px] font-bold text-foreground uppercase tracking-tight font-headline">CaramelPepper</span>
       </div>
@@ -156,6 +173,42 @@ export function MenuBar({ onNewFile }: MenuBarProps) {
             </span>
           )}
         </div>
+
+        {/* Model Selector Trigger Button */}
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => modelStore.setIsDrawerOpen(true)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-mono font-bold transition-all hover:scale-[1.02] active:scale-[0.98]",
+                  modelStore.isLocalMode
+                    ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-400 hover:border-emerald-400/60"
+                    : "bg-amber-950/40 border-amber-500/40 text-amber-400 hover:border-amber-400/60"
+                )}
+              >
+                {modelStore.isLocalMode ? (
+                  <Cpu className="w-3 h-3 text-emerald-400 shrink-0" />
+                ) : (
+                  <Cloud className="w-3 h-3 text-amber-400 shrink-0" />
+                )}
+                <span className="truncate max-w-[140px]">
+                  {modelStore.activeModel?.name || modelStore.activeModelId}
+                </span>
+                <span className="text-[8px] font-bold px-1 py-0 rounded bg-background/60 border border-current opacity-80">
+                  {modelStore.isLocalMode 
+                    ? (modelStore.activeModel?.quantization || "Q4_K_M") 
+                    : "CLOUD"}
+                </span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-popover border-border text-[10px]">
+              {modelStore.isLocalMode 
+                ? "Offline Zero-Egress Runtime. Click to switch model or configure keys." 
+                : "Cloud Provider Active. Click to switch model or configure keys."}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
           <TooltipProvider delayDuration={0}>

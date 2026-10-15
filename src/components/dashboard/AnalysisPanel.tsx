@@ -1,122 +1,188 @@
 "use client"
 
 import React from "react"
-import { Zap, ShieldAlert, Fingerprint } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+import { Zap, ShieldAlert, Fingerprint, Database, CheckCircle2, Layers } from "lucide-react"
 import { type ComplexityMetrics } from "@/lib/complexity"
 import { type CodeStyleOutput } from "@/ai/flows/code-style-alignment"
+import { useWorkspaceStore } from "@/store/useWorkspaceStore"
 import { cn } from "@/lib/utils"
 
 interface AnalysisPanelProps {
   metrics: ComplexityMetrics | null;
   style: CodeStyleOutput | null;
   isAnalyzing: boolean;
+  activeFilePath?: string | null;
 }
 
-export function AnalysisPanel({ metrics, style, isAnalyzing }: AnalysisPanelProps) {
-  if (!metrics && !isAnalyzing) {
+export function AnalysisPanel({ metrics, style, isAnalyzing, activeFilePath }: AnalysisPanelProps) {
+  const { styleRules, ragSnippets } = useWorkspaceStore();
+
+  // If no file is open or no metrics available, display clean empty state with NO metrics
+  if (!activeFilePath || !metrics) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-card">
-        <div className="w-16 h-16 rounded-sm bg-background flex items-center justify-center mb-4 border border-border">
-          <Zap className="w-8 h-8 text-muted-foreground" />
+      <div className="h-full flex flex-col bg-[#09090B] border-l border-[#222226] text-[#FAFAFA] font-sans">
+        <div className="p-4 border-b border-[#222226] flex items-center justify-between shrink-0">
+          <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+            AST & Analysis
+          </span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded border border-zinc-800 bg-[#121215] text-zinc-500 uppercase">
+            No File Active
+          </span>
         </div>
-        <h3 className="font-headline text-lg font-semibold mb-2 text-foreground">Ready for Scan</h3>
-        <p className="text-sm text-muted-foreground max-w-[240px]">
-          Load a file or paste code to start the local AI analysis engine.
-        </p>
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none">
+          <div className="w-12 h-12 rounded-xl bg-[#121215] border border-[#222226] flex items-center justify-center mb-3 text-zinc-600">
+            <Layers className="w-5 h-5 text-zinc-600" />
+          </div>
+          <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-300 mb-1.5 font-medium">
+            No Metrics Available
+          </h3>
+          <p className="text-[11px] text-zinc-500 max-w-[210px] leading-relaxed">
+            Open a file from the explorer or create a new scratchpad to inspect real-time AST complexity metrics.
+          </p>
+        </div>
       </div>
-    )
+    );
   }
 
+  const cyclomatic = metrics.cyclomatic;
+  const cognitive = metrics.cognitive;
+  const maintainability = metrics.maintainability;
+  const risk = metrics.risk;
+  const fileName = activeFilePath.split(/[/\\]/).pop() || activeFilePath;
+
   return (
-    <div className="h-full flex flex-col overflow-y-auto scroll-thin bg-card">
-      <div className="p-6 space-y-6">
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-headline text-sm font-bold uppercase tracking-wider text-muted-foreground">Code Complexity</h3>
-            {metrics && (
-              <span className={cn(
-                "text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase",
-                metrics.risk === 'critical' ? "bg-destructive/20 text-destructive" :
-                metrics.risk === 'high' ? "bg-destructive/20 text-destructive/80" :
-                metrics.risk === 'moderate' ? "bg-amber-500/20 text-amber-500" :
-                "bg-green-500/20 text-green-500"
-              )}>
-                {metrics.risk} Risk
+    <div className="h-full flex flex-col overflow-y-auto scroll-thin bg-[#09090B] border-l border-[#222226] text-[#FAFAFA] font-sans">
+      <div className="p-4 space-y-5">
+        
+        {/* Section 1: AST Complexity Metrics */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col min-w-0 pr-2">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                AST Complexity
               </span>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-background border-border">
-              <CardContent className="p-4 flex flex-col items-center">
-                <span className="text-2xl font-headline font-bold text-primary">{isAnalyzing ? "..." : metrics?.cyclomatic}</span>
-                <span className="text-[10px] text-muted-foreground uppercase">Cyclomatic</span>
-              </CardContent>
-            </Card>
-            <Card className="bg-background border-border">
-              <CardContent className="p-4 flex flex-col items-center">
-                <span className="text-2xl font-headline font-bold text-primary">{isAnalyzing ? "..." : metrics?.maintainability}%</span>
-                <span className="text-[10px] text-muted-foreground uppercase">Maint. Index</span>
-              </CardContent>
-            </Card>
-          </div>
-
-          {metrics && (
-            <div className="mt-4 space-y-3">
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs font-medium text-foreground">
-                  <span>Maintainability Index</span>
-                  <span>{metrics.maintainability}%</span>
-                </div>
-                <Progress value={metrics.maintainability} className="h-1 bg-border" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs font-medium text-foreground">
-                  <span>Cognitive Load</span>
-                  <span>{metrics.cognitive}/20</span>
-                </div>
-                <Progress value={(metrics.cognitive / 20) * 100} className="h-1 bg-border" />
-              </div>
+              <span className="font-mono text-[10px] text-zinc-500 truncate" title={activeFilePath}>
+                {fileName} {metrics.loc !== undefined ? `(${metrics.loc} LOC)` : ''}
+              </span>
             </div>
-          )}
+            <span className={cn(
+              "text-[10px] font-mono px-2 py-0.5 rounded border uppercase shrink-0",
+              risk === 'critical' ? "bg-red-950/30 text-red-400 border-red-800/40" :
+              risk === 'high' ? "bg-red-950/20 text-red-300 border-red-800/30" :
+              risk === 'moderate' ? "bg-amber-950/20 text-amber-300 border-amber-800/30" :
+              "bg-zinc-900 text-zinc-300 border-zinc-700/50"
+            )}>
+              {risk} Risk
+            </span>
+          </div>
+
+          {/* Minimal Metric Score Tiles */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="bg-[#121215] border border-[#222226] rounded-lg p-3.5 flex flex-col text-left">
+              <span className="text-[10px] font-mono uppercase text-zinc-500 mb-1">Cyclomatic</span>
+              <span className="font-mono text-2xl font-semibold text-[#FAFAFA] tracking-tight">
+                {isAnalyzing ? "..." : cyclomatic}
+              </span>
+              <span className="text-[10px] text-zinc-500 mt-1">Branch score</span>
+            </div>
+
+            <div className="bg-[#121215] border border-[#222226] rounded-lg p-3.5 flex flex-col text-left">
+              <span className="text-[10px] font-mono uppercase text-zinc-500 mb-1">Cognitive</span>
+              <span className="font-mono text-2xl font-semibold text-[#FAFAFA] tracking-tight">
+                {isAnalyzing ? "..." : cognitive}
+              </span>
+              <span className="text-[10px] text-zinc-500 mt-1">Nesting load</span>
+            </div>
+          </div>
+
+          {/* Minimal Progress Bar */}
+          <div className="p-3 bg-[#121215] rounded-lg border border-[#222226] space-y-2.5">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-zinc-400">Maintainability</span>
+              <span className="text-zinc-200 font-semibold">{maintainability}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-[#222226] rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-zinc-200 transition-all duration-500 rounded-full" 
+                style={{ width: `${maintainability}%` }}
+              />
+            </div>
+          </div>
         </section>
 
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Fingerprint className="w-4 h-4 text-primary" />
-            <h3 className="font-headline text-sm font-bold uppercase tracking-wider text-muted-foreground">Style Detective</h3>
+        {/* Section 2: Style Detective Rules */}
+        <section className="space-y-2.5">
+          <div className="flex items-center gap-2">
+            <Fingerprint className="w-3.5 h-3.5 text-zinc-400" />
+            <h3 className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+              Style Rules
+            </h3>
           </div>
           
-          <Card className="bg-background border-border overflow-hidden">
-            <div className="divide-y divide-border">
-              {[
-                { label: 'Naming', value: style?.namingConvention || 'Analyzing...' },
-                { label: 'Indentation', value: style?.indentation || 'Analyzing...' },
-                { label: 'Braces', value: style?.braceStyle || 'Analyzing...' },
-                { label: 'Quotes', value: style?.quoteStyle || 'Analyzing...' }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 text-xs">
-                  <span className="text-muted-foreground font-medium">{item.label}</span>
-                  <span className="font-code text-primary">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <div className="bg-[#121215] border border-[#222226] rounded-lg overflow-hidden divide-y divide-[#222226]">
+            {[
+              { label: 'Naming', value: style?.namingConvention || 'snake_case' },
+              { label: 'Indentation', value: style?.indentation || '4 spaces' },
+              { label: 'Braces', value: style?.braceStyle || 'OTBS (1TBS)' },
+              { label: 'Quotes', value: style?.quoteStyle || 'double quotes' }
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2 text-xs font-mono">
+                <span className="text-zinc-500 text-[11px]">{item.label}</span>
+                <span className="text-[11px] text-zinc-200">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {metrics && metrics.risk === 'critical' && (
-          <div className="p-4 rounded-sm bg-destructive/10 border border-destructive/20 flex gap-3">
-            <ShieldAlert className="w-5 h-5 text-destructive shrink-0" />
+        {/* Section 3: RAG Memory Vault */}
+        <section className="space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Database className="w-3.5 h-3.5 text-zinc-400" />
+              <h3 className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                Code Memory
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-500">
+              Local VSS
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {ragSnippets.map((snippet) => (
+              <div 
+                key={snippet.id}
+                className="bg-[#121215] border border-[#222226] rounded-lg p-2.5 space-y-1.5"
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono">
+                  <span className="text-zinc-400 truncate max-w-[140px]">{snippet.fileSource.split('/').pop()}</span>
+                  <span className="text-zinc-400">
+                    {Math.round(snippet.similarity * 100)}% match
+                  </span>
+                </div>
+                <div className="bg-[#09090B] rounded p-2 border border-[#222226] font-mono text-[11px] text-zinc-400 overflow-x-auto">
+                  <code>{snippet.snippet}</code>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Muted Warning if critical */}
+        {risk === 'critical' && (
+          <div className="p-3 rounded-lg bg-[#141416] border border-red-900/40 flex gap-2.5 text-xs">
+            <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="text-xs font-bold text-destructive">Technical Debt Warning</h4>
-              <p className="text-[11px] leading-relaxed text-muted-foreground">
-                High complexity detected. Pepper-engine suggests splitting this logic into smaller modules to reduce cognitive load.
+              <p className="font-semibold text-red-300">Technical Debt Alert</p>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Nesting depth exceeds threshold. Recommend splitting into smaller member functions.
               </p>
             </div>
           </div>
         )}
+
       </div>
     </div>
   )

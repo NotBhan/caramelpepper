@@ -1,6 +1,8 @@
 #include "crow.h"
+#include "ai/model_manager.cpp"
 #include "api/fs_handlers.cpp"
 #include "api/handlers.cpp"
+#include "api/api_routes.cpp"
 #include <mutex>
 
 /**
@@ -25,6 +27,9 @@ int main() {
         
         return crow::response(CaramelPepper::API::handleRefactorRequest(request));
     });
+
+    // Dynamic Model Selection & API Key Management Routes
+    CaramelPepper::API::registerModelManagementRoutes(app);
 
     // Vault/Settings Endpoints
     CROW_ROUTE(app, "/api/settings/keys").methods(crow::HTTPMethod::POST)([](const crow::request& req) {

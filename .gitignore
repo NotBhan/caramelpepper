@@ -43,3 +43,9 @@ secrets.json
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# local models & secrets
+backend/models/*.gguf
+backend/models/*.bin
+*.enc
+.caramelpepper/

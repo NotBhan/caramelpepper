@@ -9,14 +9,18 @@ import { RefactorPanel } from "@/components/dashboard/RefactorPanel"
 import { DiffViewer } from "@/components/dashboard/DiffViewer"
 import { WorkspaceLayout } from "@/components/dashboard/WorkspaceLayout"
 import { useAppStore } from "@/store/use-app-store"
+import { useWorkspaceStore } from "@/store/useWorkspaceStore"
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
 import { SettingsModal } from "@/components/dashboard/SettingsModal"
-import { MenuBar } from "@/components/dashboard/MenuBar"
+import { ModelSelector } from "@/components/dashboard/ModelSelector"
 import { WorkspacePickerModal } from "@/components/dashboard/WorkspacePickerModal"
 import { CookieConsent } from "@/components/dashboard/CookieConsent"
 import { NewFileModal } from "@/components/dashboard/NewFileModal"
 import { getLanguageFromPath } from "@/lib/language-mapper"
+import { LandingPage } from "@/components/landing/LandingPage"
+import { useWorkspaceTransition } from "@/hooks/useWorkspaceTransition"
+import { safeLocalStorage } from "@/lib/safe-storage"
 
 export default function Dashboard() {
   const store = useAppStore()
@@ -26,12 +30,24 @@ export default function Dashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false)
   const [isNewFileModalOpen, setIsNewFileModalOpen] = React.useState(false)
   const [hasConsented, setHasConsented] = React.useState<boolean | null>(null)
+  const [isMounted, setIsMounted] = React.useState(false)
   const { toast } = useToast()
 
   React.useEffect(() => {
-    const consent = localStorage.getItem("caramelpepper-cookie-consent")
+    setIsMounted(true)
+    const consent = safeLocalStorage.getItem("caramelpepper-cookie-consent")
     setHasConsented(consent === 'true')
   }, [])
+
+  const { phase } = useWorkspaceTransition();
+
+  if (!isMounted) {
+    return <div className="h-screen w-screen bg-[#09090B]" />;
+  }
+
+  if (phase === "landing" || phase === "transitioning") {
+    return <LandingPage />;
+  }
 
   const handleAnalyze = async () => {
     if (!store.code) return;
@@ -126,10 +142,11 @@ export default function Dashboard() {
                      !isGitHubAuthenticated;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <MenuBar onNewFile={() => setIsNewFileModalOpen(true)} />
+    <div className="flex flex-col h-screen overflow-hidden bg-[#09090B] text-[#FAFAFA]">
       <div className="flex-1 min-h-0">
         <WorkspaceLayout
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onNewFile={() => setIsNewFileModalOpen(true)}
           activeView={store.activeView}
           isDiffOpen={store.isDiffOpen}
           sidebar={
@@ -153,7 +170,13 @@ export default function Dashboard() {
               onChange={store.setCode} 
               onAnalyze={handleAnalyze}
               isAnalyzing={isBusy}
-              onClose={store.closeActiveFile}
+              onClose={() => {
+                const ws = useWorkspaceStore.getState();
+                if (ws.activeTabId) {
+                  ws.closeTab(ws.activeTabId);
+                }
+                store.closeActiveFile();
+              }}
               activeFilePath={store.activeFilePath}
               onOpenWorkspace={store.resetWorkspaceRoot}
               onNewFile={() => setIsNewFileModalOpen(true)}
@@ -175,6 +198,7 @@ export default function Dashboard() {
               metrics={store.originalMetrics} 
               style={styleReport}
               isAnalyzing={isBusy}
+              activeFilePath={store.activeFilePath}
             />
           }
           bottom={
@@ -203,6 +227,8 @@ export default function Dashboard() {
         ollamaConfig={store.ollamaConfig}
         onSaveOllama={store.saveOllamaConfig}
       />
+
+      <ModelSelector />
 
       <NewFileModal 
         isOpen={isNewFileModalOpen} 

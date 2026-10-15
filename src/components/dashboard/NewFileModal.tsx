@@ -2,16 +2,7 @@
 "use client"
 
 import React from "react"
-import { 
-  FileCode, 
-  FileJson, 
-  FileText, 
-  Terminal, 
-  Code2, 
-  Layers,
-  FileSearch,
-  FileType
-} from "lucide-react"
+import { Plus } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -21,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/store/use-app-store"
-import { cn } from "@/lib/utils"
+import { MaterialFileIcon } from "./MaterialIcon"
 
 interface NewFileModalProps {
   isOpen: boolean;
@@ -32,17 +23,16 @@ export function NewFileModal({ isOpen, onOpenChange }: NewFileModalProps) {
   const store = useAppStore()
 
   const languages = [
-    { name: "TypeScript", ext: "ts", icon: FileCode, color: "text-[#007acc]" },
-    { name: "JavaScript", ext: "js", icon: FileCode, color: "text-amber-400" },
-    { name: "Python", ext: "py", icon: Terminal, color: "text-emerald-400" },
-    { name: "C++", ext: "cpp", icon: Code2, color: "text-blue-500" },
-    { name: "Rust", ext: "rs", icon: Layers, color: "text-orange-500" },
-    { name: "Go", ext: "go", icon: FileSearch, color: "text-cyan-400" },
-    { name: "Java", ext: "java", icon: FileType, color: "text-red-400" },
-    { name: "Markdown", ext: "md", icon: FileText, color: "text-[#858585]" },
-    { name: "JSON", ext: "json", icon: FileJson, color: "text-amber-200" },
-    { name: "HTML/CSS", ext: "html", icon: Code2, color: "text-orange-400" },
-    { name: "Plain Text", ext: "txt", icon: FileText, color: "text-[#858585]" },
+    { name: "C++ Source", ext: "cpp" },
+    { name: "C++ Header", ext: "hpp" },
+    { name: "C Source", ext: "c" },
+    { name: "Python", ext: "py" },
+    { name: "TypeScript", ext: "ts" },
+    { name: "React TSX", ext: "tsx" },
+    { name: "Rust", ext: "rs" },
+    { name: "Go", ext: "go" },
+    { name: "Markdown", ext: "md" },
+    { name: "JSON", ext: "json" },
   ]
 
   const handleSelect = (ext: string) => {
@@ -52,15 +42,15 @@ export function NewFileModal({ isOpen, onOpenChange }: NewFileModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] bg-[#252526] border-[#3c3c3c] p-0 overflow-hidden shadow-2xl">
+      <DialogContent className="sm:max-w-[480px] bg-[#09090B] border border-[#27272A] p-0 overflow-hidden shadow-2xl">
         <div className="p-6">
-          <DialogHeader className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <FileCode className="w-5 h-5 text-[#007acc]" />
-              <DialogTitle className="font-headline text-xl text-[#ffffff]">New Scratchpad</DialogTitle>
+          <DialogHeader className="mb-5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Plus className="w-4 h-4 text-[#E11D48]" />
+              <DialogTitle className="font-headline text-lg text-[#FAFAFA]">New Scratchpad</DialogTitle>
             </div>
-            <DialogDescription className="text-[#858585] text-xs">
-              Select a programming language for your new workspace. CaramelPepper will optimize its AI engine based on your choice.
+            <DialogDescription className="text-zinc-400 text-xs leading-relaxed">
+              Select a language to boot an instant tree-sitter AST analysis environment.
             </DialogDescription>
           </DialogHeader>
 
@@ -70,21 +60,24 @@ export function NewFileModal({ isOpen, onOpenChange }: NewFileModalProps) {
                 key={lang.ext}
                 variant="outline"
                 onClick={() => handleSelect(lang.ext)}
-                className="h-14 border-[#3c3c3c] bg-[#1e1e1e] hover:bg-[#2a2d2e] hover:border-[#007acc]/40 justify-start px-4 group transition-all duration-200"
+                className="h-12 border-[#222226] bg-[#141416] hover:bg-[#18181B] hover:border-zinc-600 justify-start px-3.5 group transition-all"
               >
-                <lang.icon className={cn("w-5 h-5 mr-3 shrink-0", lang.color)} />
+                <MaterialFileIcon fileName={`file.${lang.ext}`} className="w-4 h-4 mr-3 shrink-0" />
                 <div className="flex flex-col items-start overflow-hidden">
-                  <span className="text-sm font-bold text-[#ffffff]">{lang.name}</span>
-                  <span className="text-[10px] text-[#858585] uppercase">.{lang.ext}</span>
+                  <span className="text-xs font-medium text-[#FAFAFA]">{lang.name}</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">.{lang.ext}</span>
                 </div>
               </Button>
             ))}
           </div>
         </div>
 
-        <div className="bg-[#1e1e1e] px-6 py-3 border-t border-[#3c3c3c] flex items-center justify-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#007acc] animate-pulse" />
-          <span className="text-[10px] text-[#858585] font-mono uppercase tracking-widest">Select an environment to boot</span>
+        <div className="bg-[#121215] px-6 py-2.5 border-t border-[#222226] flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Local C++20 Core</span>
+          </div>
+          <span>Fast AST Mode</span>
         </div>
       </DialogContent>
     </Dialog>

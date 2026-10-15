@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { type InferenceProvider, useAppStore } from "@/store/use-app-store"
+import { useModelStore } from "@/store/useModelStore"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -152,9 +153,23 @@ export function SettingsModal({
       <DialogContent className="sm:max-w-[600px] bg-card border-border text-foreground p-0 overflow-hidden shadow-2xl">
         <div className="p-6 pb-4">
           <DialogHeader>
-            <div className="flex items-center gap-2 mb-2">
-              <Settings className="w-5 h-5 text-primary" />
-              <DialogTitle className="font-headline text-xl">Engine Configuration</DialogTitle>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-primary" />
+                <DialogTitle className="font-headline text-xl">Engine Configuration</DialogTitle>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onOpenChange(false);
+                  useModelStore.getState().setIsDrawerOpen(true);
+                }}
+                className="h-7 text-[10px] font-bold border-primary/30 text-primary hover:bg-primary/10 gap-1.5"
+              >
+                <Cpu className="w-3 h-3" />
+                Open Model Vault
+              </Button>
             </div>
             <DialogDescription className="text-muted-foreground text-xs">
               Configure your local or cloud inference hierarchy. Active provider is used for all refactoring tasks.

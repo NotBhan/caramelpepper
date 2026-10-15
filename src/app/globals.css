@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 90%;
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 90%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 90%;
-    --primary: 277 85% 49%;
+    --background: 240 10% 4%; /* #09090b */
+    --foreground: 0 0% 98%;   /* #fafafa */
+    --card: 240 5% 7%;         /* #121215 */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 5% 8%;      /* #141416 */
+    --popover-foreground: 0 0% 98%;
+    --primary: 346 77% 50%;    /* #e11d48 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 198 93% 64%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 240 4% 10%;   /* #18181b */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 12%;       /* #1c1c20 */
+    --muted-foreground: 240 5% 65%; /* #a1a1aa */
+    --accent: 240 4% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 277 85% 49%;
+    --border: 240 5% 15%;      /* #222226 */
+    --input: 240 5% 15%;
+    --ring: 346 77% 50%;
     --radius: 0.375rem;
   }
 }
@@ -32,7 +32,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-[#09090B] text-foreground font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
@@ -40,17 +40,17 @@
 }
 
 .code-editor {
-  font-family: 'Source Code Pro', monospace;
+  font-family: 'JetBrains Mono', monospace;
   tab-size: 2;
 }
 
 .scroll-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 .scroll-thin::-webkit-scrollbar-thumb {
-  @apply bg-[#2a2a2a] rounded-full;
+  @apply bg-[#27272a] rounded-full;
 }
 
 .scroll-thin::-webkit-scrollbar-track {
@@ -58,12 +58,16 @@
 }
 
 .font-headline {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+.font-serif-display {
+  font-family: 'Instrument Serif', Georgia, serif;
 }
 
 /* Monaco Editor Background Override */
 .monaco-editor, 
 .monaco-editor .margin, 
 .monaco-editor-background {
-  background-color: #000000 !important;
+  background-color: #09090B !important;
 }
